@@ -46,3 +46,4 @@ This project uses **Docker Compose** to run PostgreSQL and pgAdmin for local dev
 ```bash
 docker-compose up
 v
+```
