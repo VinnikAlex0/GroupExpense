@@ -29,21 +29,22 @@
 
 - Node.js + Express (or NestJS)
 - PostgreSQL (via Prisma ORM)
-- REST or GraphQL API
-- Auth: Firebase Auth or Passport.js with JWT
+- REST API
 
 ---
 
-## 🐳 Docker-Based Database Setup
+# 1. Start database (PostgreSQL + pgAdmin)
 
-This project uses **Docker Compose** to run PostgreSQL and pgAdmin for local development.
+docker-compose up -d
 
-### ▶️ To Start the DB (PostgreSQL + pgAdmin)
+# 2. Start backend (Node.js + Prisma)
 
-1. Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and running
-2. From the project root, run:
+cd group-expense-backend
+npm install
+npm run dev
 
-```bash
-docker-compose up
-v
-```
+# 3. Start frontend (React + Vite)
+
+cd ../group-expense-frontend
+npm install
+npm run dev
