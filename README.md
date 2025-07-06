@@ -4,18 +4,6 @@
 
 ---
 
-## 🚀 Features
-
-- ✅ Create groups and invite members
-- 🧾 Add expenses with descriptions, categories, and who paid
-- 💰 Automatically calculates who owes who
-- 📊 Group summary view with total spent and balances
-- ✉️ Shareable group links (invite via link)
-- 🔐 Auth with Google or email/password
-- 🧮 Settling up records (mark when debts are paid)
-
----
-
 ## 🛠️ Tech Stack
 
 ### Frontend
