@@ -33,8 +33,6 @@
 
 ---
 
-// Startup
-
 # 1. Start database (PostgreSQL + pgAdmin)
 
 docker-compose up -d
@@ -51,14 +49,12 @@ cd ../group-expense-frontend
 npm install
 npm run dev
 
-//Backend/Database Development
+# 4. Edit your models in prisma/schema.prisma
 
-# 1. Edit your models in prisma/schema.prisma
-
-# 2. Create migration and update DB
+# 5. Create migration and update DB
 
 npx prisma migrate dev --name init
 
-# 3. Open visual DB browser (optional)
+# 6. Open visual DB browser (optional)
 
 npx prisma studio
