@@ -49,14 +49,6 @@ const GroupsPage: React.FC = () => {
         {/* Error State */}
         {error && <ErrorAlert message={error} onRetry={fetchGroups} />}
 
-        {/* Create Group Button */}
-        <Button
-          onClick={() => setModalOpened(true)}
-          className="bg-blue-600 hover:bg-blue-700 mb-4"
-        >
-          + Create Group
-        </Button>
-
         {/* Groups List */}
         <GroupList
           groups={groups}
