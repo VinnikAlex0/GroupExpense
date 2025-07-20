@@ -9,6 +9,7 @@ import {
   rem,
 } from "@mantine/core";
 import { useAuth } from "../contexts/AuthContext";
+import { SessionStatus } from "./SessionStatus";
 
 interface TopNavigationProps {
   title?: string;
@@ -55,8 +56,12 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
           {/* Center Section - Navigation Items (Future: Tabs, etc.) */}
           <div className="flex-1 flex justify-center">{children}</div>
 
-          {/* Right Section - User Menu */}
+          {/* Right Section - Session Status, Custom Content, and User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Session Status */}
+            <SessionStatus />
+
+            {/* Custom right section content */}
             {rightSection}
 
             <Menu shadow="md" width={200} position="bottom-end">
