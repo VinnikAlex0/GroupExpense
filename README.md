@@ -102,9 +102,41 @@ npx prisma studio  # Visual database interface
 
 ---
 
+## Configuration
+
+### Session Timeout Settings
+
+You can customize session timeout behavior by adding these environment variables to your `.env` file in the frontend directory:
+
+```bash
+# Session timeout in minutes (default: 120 minutes = 2 hours)
+REACT_APP_SESSION_TIMEOUT_MINUTES=120
+
+# Warning time before session expires in minutes (default: 5 minutes)
+REACT_APP_SESSION_WARNING_MINUTES=5
+```
+
+**Session Management Features:**
+
+- ✅ **Automatic logout** after configured timeout period
+- ✅ **Warning notifications** 5 minutes before expiry (configurable)
+- ✅ **Session extension** on user activity (clicks, typing, scrolling)
+- ✅ **Manual session refresh** via the session status indicator
+- ✅ **Visual session timer** appears when session expires within 30 minutes
+
+**Security Benefits:**
+
+- Prevents unauthorized access to abandoned sessions
+- Configurable timeout duration for different security requirements
+- Automatic cleanup of expired session data
+- User-friendly warnings before forced logout
+
+---
+
 ## Current Features
 
 - ✅ **User Authentication** - Secure signup/login with Supabase
+- ✅ **Session Management** - Automatic session timeout with configurable duration and user warnings
 - ✅ **User-Specific Groups** - Personal group management with auth protection
 - ✅ **Group Management** - Create and view expense groups
 - ✅ **Responsive Design** - Mobile-friendly interface with Tailwind CSS

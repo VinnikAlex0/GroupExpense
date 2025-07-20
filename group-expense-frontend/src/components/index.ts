@@ -6,3 +6,4 @@ export { ErrorAlert } from "./ErrorAlert";
 export { LoadingSpinner } from "./LoadingSpinner";
 export { ProtectedRoute } from "./ProtectedRoute";
 export { TopNavigation } from "./TopNavigation";
+export { SessionStatus } from "./SessionStatus";
