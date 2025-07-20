@@ -7,10 +7,78 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Groups can have multiple members
 model Group {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdBy String
-  userId    String   // Required - Supabase user ID
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  members     GroupMember[]
+  expenses    Expense[]
+}
+
+// Many-to-many relationship between users and groups
+model GroupMember {
+  id       Int      @id @default(autoincrement())
+  groupId  Int
+  userId   String   // Supabase user ID
+  role     Role     @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  // User profile information (cached from Supabase)
+  email    String
+  name     String?
+
+  // Relationships
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
+// Expense categories for organization
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  icon        String?  // Icon identifier (e.g., "food", "transport")
+  color       String?  // Hex color code
+  isDefault   Boolean  @default(true) // Pre-defined vs custom categories
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  expenses    Expense[]
+}
+
+// Individual expenses within groups
+model Expense {
+  id          Int      @id @default(autoincrement())
+  amount      Decimal  @db.Decimal(10, 2) // Supports currency with 2 decimal places
+  description String
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Foreign keys
+  groupId     Int
+  paidById    String   // Supabase user ID of who paid
+  categoryId  Int?     // Optional category
+
+  // Relationships
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  category    Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([groupId])
+  @@index([paidById])
+  @@index([date])
+}
+
+// User roles within groups
+enum Role {
+  OWNER   // Can delete group, manage members
+  ADMIN   // Can manage members
+  MEMBER  // Can add expenses, view group
 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Container, Title, Button } from "@mantine/core";
 import { useGroups } from "../hooks/useGroups";
-import { Group, CreateGroupData } from "../services/groupService";
+import { Group as GroupType, CreateGroupData } from "../services/groupService";
 import {
   GroupList,
   CreateGroupModal,
@@ -15,7 +15,7 @@ const GroupsPage: React.FC = () => {
     useGroups();
   const [modalOpened, setModalOpened] = useState(false);
 
-  const handleGroupClick = (group: Group) => {
+  const handleGroupClick = (group: GroupType) => {
     // TODO: Navigate to group details page
     console.log("Group clicked:", group);
   };
