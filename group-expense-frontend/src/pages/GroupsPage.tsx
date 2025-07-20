@@ -15,16 +15,8 @@ const GroupsPage: React.FC = () => {
   const [modalOpened, setModalOpened] = useState(false);
 
   const handleGroupClick = (group: Group) => {
-    console.log("Group clicked:", group);
     // TODO: Navigate to group details page
-  };
-
-  const handleCreateGroup = async (data: CreateGroupData): Promise<boolean> => {
-    const success = await createGroup(data);
-    if (success) {
-      setModalOpened(false);
-    }
-    return success;
+    console.log("Group clicked:", group);
   };
 
   return (
@@ -62,7 +54,7 @@ const GroupsPage: React.FC = () => {
         <CreateGroupModal
           opened={modalOpened}
           onClose={() => setModalOpened(false)}
-          onSubmit={handleCreateGroup}
+          onSubmit={createGroup}
           loading={creating}
         />
       </Container>
