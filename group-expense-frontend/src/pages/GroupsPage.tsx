@@ -22,7 +22,6 @@ const GroupsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Similar to ngOnInit
   useEffect(() => {
     axios
       .get("http://localhost:4000/api/groups")
