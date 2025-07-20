@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Container, Title, Button } from "@mantine/core";
 import { useGroups } from "../hooks/useGroups";
-import { Group } from "../services/groupService";
+import { Group, CreateGroupData } from "../services/groupService";
 import {
   GroupList,
   CreateGroupModal,
@@ -15,8 +15,16 @@ const GroupsPage: React.FC = () => {
   const [modalOpened, setModalOpened] = useState(false);
 
   const handleGroupClick = (group: Group) => {
-    // TODO: Navigate to group details page
     console.log("Group clicked:", group);
+    // TODO: Navigate to group details page
+  };
+
+  const handleCreateGroup = async (data: CreateGroupData): Promise<boolean> => {
+    const success = await createGroup(data);
+    if (success) {
+      setModalOpened(false);
+    }
+    return success;
   };
 
   return (
@@ -35,13 +43,15 @@ const GroupsPage: React.FC = () => {
         {/* Error State */}
         {error && <ErrorAlert message={error} onRetry={fetchGroups} />}
 
-        {/* Groups List */}
+        {/* Create Group Button */}
         <Button
           onClick={() => setModalOpened(true)}
           className="bg-blue-600 hover:bg-blue-700 mb-4"
         >
           + Create Group
         </Button>
+
+        {/* Groups List */}
         <GroupList
           groups={groups}
           loading={loading}
@@ -52,7 +62,7 @@ const GroupsPage: React.FC = () => {
         <CreateGroupModal
           opened={modalOpened}
           onClose={() => setModalOpened(false)}
-          onSubmit={createGroup}
+          onSubmit={handleCreateGroup}
           loading={creating}
         />
       </Container>
