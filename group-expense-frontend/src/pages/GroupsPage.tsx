@@ -7,6 +7,7 @@ import {
   CreateGroupModal,
   ErrorAlert,
   LoadingSpinner,
+  TopNavigation,
 } from "../components";
 
 const GroupsPage: React.FC = () => {
@@ -21,11 +22,24 @@ const GroupsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation */}
+      <TopNavigation
+        title="GroupExpense"
+        rightSection={
+          <Button
+            onClick={() => setModalOpened(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            + Create Group
+          </Button>
+        }
+      />
+
       <Container size="md" py="xl">
-        {/* Header */}
-        <div className="mb-6 flex justify-between items-center">
+        {/* Page Header */}
+        <div className="mb-6">
           <Title order={2} className="text-gray-800">
-            Group List
+            Your Groups
           </Title>
         </div>
 
@@ -35,6 +49,7 @@ const GroupsPage: React.FC = () => {
         {/* Error State */}
         {error && <ErrorAlert message={error} onRetry={fetchGroups} />}
 
+<<<<<<< HEAD
         {/* Create Group Button */}
         <Button
           onClick={() => setModalOpened(true)}
@@ -43,6 +58,8 @@ const GroupsPage: React.FC = () => {
           + Create Group
         </Button>
 
+=======
+>>>>>>> dbb6854 (feat: integrate Supabase auth with user-specific groups and modular UI)
         {/* Groups List */}
         <GroupList
           groups={groups}

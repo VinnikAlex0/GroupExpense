@@ -11,5 +11,6 @@ model Group {
   id        Int      @id @default(autoincrement())
   name      String
   createdBy String
+  userId    String   // Required - Supabase user ID
   createdAt DateTime @default(now())
 }
