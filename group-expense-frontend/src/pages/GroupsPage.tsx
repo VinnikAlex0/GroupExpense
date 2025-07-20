@@ -49,7 +49,6 @@ const GroupsPage: React.FC = () => {
         {/* Error State */}
         {error && <ErrorAlert message={error} onRetry={fetchGroups} />}
 
-<<<<<<< HEAD
         {/* Create Group Button */}
         <Button
           onClick={() => setModalOpened(true)}
@@ -58,8 +57,6 @@ const GroupsPage: React.FC = () => {
           + Create Group
         </Button>
 
-=======
->>>>>>> dbb6854 (feat: integrate Supabase auth with user-specific groups and modular UI)
         {/* Groups List */}
         <GroupList
           groups={groups}
