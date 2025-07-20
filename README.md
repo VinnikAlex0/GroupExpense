@@ -1,10 +1,10 @@
-# 💸 GroupExpense – Collaborative Expense Splitter
+# GroupExpense – Expense Splitter
 
-**GroupExpense** is a full-stack web app that helps groups of friends or roommates track shared expenses and split costs fairly. Whether it's for a holiday, house share, or weekend getaway, GroupExpense simplifies who owes what and makes settling up painless.
+Full-stack web app that simplifies who owes what and makes settling up easy.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -43,17 +43,9 @@
 ```
 src/
 ├── components/          # Reusable UI components
-│   ├── GroupCard.tsx    # Individual group display
-│   ├── GroupList.tsx    # Grid layout with empty states
-│   ├── CreateGroupModal.tsx # Form modal with validation
-│   ├── ErrorAlert.tsx   # Error display with retry
-│   └── LoadingSpinner.tsx # Loading states
 ├── hooks/               # Custom React hooks
-│   └── useGroups.ts     # Groups state management
 ├── services/            # API communication layer
-│   └── groupService.ts  # Groups CRUD operations
 ├── pages/               # Main page components
-│   └── GroupsPage.tsx   # Groups dashboard (modular, ~50 lines)
 └── App.tsx             # Routing and app structure
 ```
 
@@ -62,11 +54,8 @@ src/
 ```
 src/
 ├── controllers/         # Request handlers
-│   └── group.controller.ts
 ├── routes/             # API route definitions
-│   └── group.routes.ts
 ├── prisma/             # Database layer
-│   └── client.ts
 └── server.ts           # Express app setup
 ```
 
@@ -134,7 +123,7 @@ npx prisma studio  # Visual database interface
 
 ---
 
-## 🧪 Development Notes
+## Development Notes
 
 ### Code Style
 
@@ -157,50 +146,3 @@ npx prisma studio  # Visual database interface
 - **Responsive Design** - Mobile-first approach
 
 ---
-
-## 📁 Database Schema
-
-```sql
--- Current Schema
-model Group {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdBy String
-  createdAt DateTime @default(now())
-}
-
--- Planned with Authentication
-model Group {
-  id        Int      @id @default(autoincrement())
-  name      String
-  userId    String   -- Supabase user ID
-  createdAt DateTime @default(now())
-  expenses  Expense[]
-}
-
-model Expense {
-  id          Int      @id @default(autoincrement())
-  description String
-  amount      Decimal
-  groupId     Int
-  paidBy      String   -- User ID
-  createdAt   DateTime @default(now())
-  group       Group    @relation(fields: [groupId], references: [id])
-}
-```
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Follow the modular architecture patterns
-4. Add TypeScript types for all new code
-5. Test your changes thoroughly
-6. Commit with descriptive messages
-7. Submit a pull request
-
----
-
-**Built with ❤️ for seamless expense sharing**
