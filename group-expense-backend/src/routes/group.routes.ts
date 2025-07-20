@@ -1,21 +1,54 @@
-import express, { Request, Response } from "express";
-import { createGroup, getGroups } from "../controllers/group.controller";
+import { Router } from "express";
+import {
+  createGroup,
+  getGroups,
+  getGroupById,
+  addGroupMember,
+  updateGroupMember,
+  removeGroupMember,
+  deleteGroup,
+} from "../controllers/group.controller";
+import {
+  createExpense,
+  getExpensesByGroup,
+  updateExpense,
+  deleteExpense,
+  getCategories,
+  getGroupSummary,
+} from "../controllers/expense.controller";
 import { authenticateUser } from "../middleware/auth.middleware";
 
-const router = express.Router();
+const router = Router();
 
-// POST /groups - Create a new group (requires authentication)
-router.post(
-  "/groups",
+// Group routes
+router.post("/groups", authenticateUser, createGroup);
+router.get("/groups", authenticateUser, getGroups);
+router.get("/groups/:id", authenticateUser, getGroupById);
+router.delete("/groups/:id", authenticateUser, deleteGroup);
+
+// Group member routes
+router.post("/groups/:id/members", authenticateUser, addGroupMember);
+router.put(
+  "/groups/:id/members/:memberId",
   authenticateUser,
-  async (req: Request, res: Response) => {
-    await createGroup(req, res);
-  }
+  updateGroupMember
+);
+router.delete(
+  "/groups/:id/members/:memberId",
+  authenticateUser,
+  removeGroupMember
 );
 
-// GET /groups - Get user's groups (requires authentication)
-router.get("/groups", authenticateUser, async (req: Request, res: Response) => {
-  await getGroups(req, res);
-});
+// Expense routes
+router.post("/expenses", authenticateUser, createExpense);
+router.get("/groups/:groupId/expenses", authenticateUser, getExpensesByGroup);
+router.put("/expenses/:id", authenticateUser, updateExpense);
+router.delete("/expenses/:id", authenticateUser, deleteExpense);
+
+// Group summary route
+router.get("/groups/:groupId/summary", authenticateUser, getGroupSummary);
+
+// Category routes
+router.get("/categories", authenticateUser, getCategories);
 
 export default router;

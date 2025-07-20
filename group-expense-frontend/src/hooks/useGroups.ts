@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { notifications } from "@mantine/notifications";
-import { groupService, Group, CreateGroupData } from "../services/groupService";
+import {
+  groupService,
+  Group as GroupType,
+  CreateGroupData,
+} from "../services/groupService";
 
 export const useGroups = () => {
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<GroupType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
