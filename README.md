@@ -36,7 +36,7 @@ Full-stack web app that simplifies who owes what and makes settling up easy.
 
 ---
 
-##  Architecture
+## Architecture
 
 ### Frontend Structure
 
