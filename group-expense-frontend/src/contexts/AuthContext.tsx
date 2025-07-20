@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { User, AuthError } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
+import { supabase, sessionUtils } from "../lib/supabase";
+import { useSessionTimeout } from "../hooks/useSessionTimeout";
 
 // Define what our auth context will provide
 interface AuthContextType {
@@ -15,6 +22,7 @@ interface AuthContextType {
     password: string
   ) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 // Create the context
@@ -36,14 +44,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Handle session expiry - sign out user
+  const handleSessionExpired = useCallback(async () => {
+    console.log("Session expired, signing out user");
+    try {
+      await supabase.auth.signOut();
+      sessionUtils.removeSessionExpiry();
+      setUser(null);
+    } catch (error) {
+      console.error("Error during session expiry logout:", error);
+      // Force clear the user state even if signOut fails
+      setUser(null);
+      sessionUtils.removeSessionExpiry();
+    }
+  }, []);
+
+  // Initialize session timeout hook
+  useSessionTimeout({
+    onSessionExpired: handleSessionExpired,
+    isAuthenticated: !!user,
+  });
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        // Check if session is expired on initial load
+        if (session?.user && sessionUtils.isSessionExpired()) {
+          console.log("Initial session check: session expired");
+          await handleSessionExpired();
+          setLoading(false);
+          return;
+        }
+
+        setUser(session?.user ?? null);
+
+        // Set session expiry if user is logged in and no expiry is set
+        if (session?.user && !sessionUtils.getSessionExpiry()) {
+          const expiryTime = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
+          sessionUtils.setSessionExpiry(expiryTime);
+        }
+      } catch (error) {
+        console.error("Error getting initial session:", error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     getInitialSession();
@@ -52,13 +102,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
+      console.log("Auth state changed:", event, session?.user?.email);
+
+      if (event === "SIGNED_OUT" || !session) {
+        setUser(null);
+        sessionUtils.removeSessionExpiry();
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        setUser(session.user);
+        // Set new session expiry
+        const expiryTime = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
+        sessionUtils.setSessionExpiry(expiryTime);
+      }
+
       setLoading(false);
     });
 
     // Cleanup subscription
     return () => subscription.unsubscribe();
-  }, []);
+  }, [handleSessionExpired]);
 
   // Sign up function
   const signUp = async (email: string, password: string) => {
@@ -75,12 +136,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       email,
       password,
     });
+
+    // Session expiry will be set automatically via onAuthStateChange
     return { error };
   };
 
   // Sign out function
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+      sessionUtils.removeSessionExpiry();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Clear local state even if signOut fails
+      setUser(null);
+      sessionUtils.removeSessionExpiry();
+    }
+  };
+
+  // Manual session refresh function
+  const refreshSession = async () => {
+    try {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.refreshSession();
+
+      if (error) {
+        console.error("Session refresh failed:", error);
+        await handleSessionExpired();
+        return;
+      }
+
+      if (session) {
+        // Update session expiry
+        const expiryTime = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
+        sessionUtils.setSessionExpiry(expiryTime);
+        console.log("Session refreshed manually");
+      }
+    } catch (error) {
+      console.error("Error refreshing session:", error);
+      await handleSessionExpired();
+    }
   };
 
   const value = {
@@ -89,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     signUp,
     signIn,
     signOut,
+    refreshSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
