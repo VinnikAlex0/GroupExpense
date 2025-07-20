@@ -22,11 +22,12 @@ Full-stack web app that simplifies who owes what and makes settling up easy.
 - **Prisma ORM** - Database modeling and migrations
 - **PostgreSQL** - Relational database for data persistence
 
-### Authentication (Planned)
+### Authentication
 
 - **Supabase** - Authentication, authorization, and user management
-- **Row-level Security** - Database-level access control
-- **JWT Tokens** - Secure session management
+- **JWT Middleware** - Backend route protection and user verification
+- **Auth Context** - Frontend authentication state management
+- **Protected Routes** - Route-level access control
 
 ### Development Tools
 
@@ -36,25 +37,27 @@ Full-stack web app that simplifies who owes what and makes settling up easy.
 
 ---
 
-##  Architecture
+## Architecture
 
 ### Frontend Structure
 
 ```
 src/
-├── components/          # Reusable UI components
-├── hooks/               # Custom React hooks
+├── components/          # Reusable UI components (GroupCard, CreateGroupModal, etc.)
+├── contexts/            # React contexts (AuthContext)
+├── hooks/               # Custom React hooks (useGroups)
 ├── services/            # API communication layer
-├── pages/               # Main page components
-└── App.tsx             # Routing and app structure
+├── pages/               # Main page components (GroupsPage, AuthPage)
+└── App.tsx             # Routing with protected routes
 ```
 
 ### Backend Structure
 
 ```
 src/
-├── controllers/         # Request handlers
-├── routes/             # API route definitions
+├── controllers/         # Request handlers (group.controller.ts)
+├── middleware/          # Auth middleware for protected routes
+├── routes/             # API route definitions with auth protection
 ├── prisma/             # Database layer
 └── server.ts           # Express app setup
 ```
@@ -101,6 +104,8 @@ npx prisma studio  # Visual database interface
 
 ## Current Features
 
+- ✅ **User Authentication** - Secure signup/login with Supabase
+- ✅ **User-Specific Groups** - Personal group management with auth protection
 - ✅ **Group Management** - Create and view expense groups
 - ✅ **Responsive Design** - Mobile-friendly interface with Tailwind CSS
 - ✅ **Form Validation** - Real-time validation with helpful error messages
@@ -110,8 +115,6 @@ npx prisma studio  # Visual database interface
 
 ## Planned Features
 
-- 🔄 **User Authentication** - Secure signup/login with Supabase
-- 🔄 **User-Specific Groups** - Personal group management
 - 🔄 **Expense Tracking** - Add and categorize shared expenses
 - 🔄 **Smart Splitting** - Flexible expense splitting (equal, percentage, custom)
 - 🔄 **Debt Calculation** - Automatic "who owes whom" calculations

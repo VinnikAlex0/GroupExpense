@@ -7,16 +7,19 @@ import "@mantine/notifications/styles.css";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <MantineProvider>
-      <Notifications />
-      <App />
-    </MantineProvider>
+    <AuthProvider>
+      <MantineProvider>
+        <Notifications />
+        <App />
+      </MantineProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
 

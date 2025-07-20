@@ -19,7 +19,6 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const form = useForm<CreateGroupData>({
     initialValues: {
       name: "",
-      createdBy: "",
     },
     validate: {
       name: (value) => {
@@ -28,14 +27,6 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           return "Group name must be at least 2 characters";
         if (value.trim().length > 100)
           return "Group name must be less than 100 characters";
-        return null;
-      },
-      createdBy: (value) => {
-        if (!value.trim()) return "Creator name is required";
-        if (value.trim().length < 2)
-          return "Creator name must be at least 2 characters";
-        if (value.trim().length > 50)
-          return "Creator name must be less than 50 characters";
         return null;
       },
     },
@@ -71,14 +62,6 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             {...form.getInputProps("name")}
             disabled={loading}
             data-autofocus
-          />
-
-          <TextInput
-            label="Created By"
-            placeholder="Enter your name"
-            required
-            {...form.getInputProps("createdBy")}
-            disabled={loading}
           />
 
           <Group justify="flex-end" mt="md">
