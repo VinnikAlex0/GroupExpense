@@ -1,64 +1,62 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
+import { Container, Title, Button } from "@mantine/core";
+import { useGroups } from "../hooks/useGroups";
+import { Group } from "../services/groupService";
 import {
-  Container,
-  Title,
-  Card,
-  Text,
-  SimpleGrid,
-  Loader,
-  Alert,
-} from "@mantine/core";
-
-type Group = {
-  id: number;
-  name: string;
-  createdBy: string;
-  createdAt: string;
-};
+  GroupList,
+  CreateGroupModal,
+  ErrorAlert,
+  LoadingSpinner,
+} from "../components";
 
 const GroupsPage: React.FC = () => {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { groups, loading, error, creating, fetchGroups, createGroup } =
+    useGroups();
+  const [modalOpened, setModalOpened] = useState(false);
 
-  // Similar to ngOnInit
-  useEffect(() => {
-    axios
-      .get("http://localhost:4000/api/groups")
-      .then((res) => {
-        setGroups(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Failed to fetch groups");
-        setLoading(false);
-      });
-  }, []);
+  const handleGroupClick = (group: Group) => {
+    // TODO: Navigate to group details page
+    console.log("Group clicked:", group);
+  };
 
   return (
-    <Container size="md" py="xl">
-      <Title order={2} mb="md">
-        Group List
-      </Title>
+    <div className="min-h-screen bg-gray-50">
+      <Container size="md" py="xl">
+        {/* Header */}
+        <div className="mb-6 flex justify-between items-center">
+          <Title order={2} className="text-gray-800">
+            Group List
+          </Title>
+        </div>
 
-      {loading && <Loader />}
-      {error && <Alert color="red">{error}</Alert>}
+        {/* Loading State */}
+        {loading && <LoadingSpinner />}
 
-      <SimpleGrid cols={{ base: 1, sm: 2 }}>
-        {groups.map((group) => (
-          <Card key={group.id} shadow="sm" radius="md" p="lg" withBorder>
-            <Text fw={500}>{group.name}</Text>
-            <Text size="sm" c="dimmed">
-              Created by: {group.createdBy}
-            </Text>
-            <Text size="xs" mt="xs">
-              {new Date(group.createdAt).toLocaleString()}
-            </Text>
-          </Card>
-        ))}
-      </SimpleGrid>
-    </Container>
+        {/* Error State */}
+        {error && <ErrorAlert message={error} onRetry={fetchGroups} />}
+
+        {/* Groups List */}
+        <Button
+          onClick={() => setModalOpened(true)}
+          className="bg-blue-600 hover:bg-blue-700 mb-4"
+        >
+          + Create Group
+        </Button>
+        <GroupList
+          groups={groups}
+          loading={loading}
+          onGroupClick={handleGroupClick}
+        />
+
+        {/* Create Group Modal */}
+        <CreateGroupModal
+          opened={modalOpened}
+          onClose={() => setModalOpened(false)}
+          onSubmit={createGroup}
+          loading={creating}
+        />
+      </Container>
+    </div>
   );
 };
 
