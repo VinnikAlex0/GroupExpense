@@ -36,7 +36,7 @@ Full-stack web app that simplifies who owes what and makes settling up easy.
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ### Frontend Structure
 
@@ -61,7 +61,7 @@ src/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -99,7 +99,7 @@ npx prisma studio  # Visual database interface
 
 ---
 
-## 🎯 Current Features
+## Current Features
 
 - ✅ **Group Management** - Create and view expense groups
 - ✅ **Responsive Design** - Mobile-friendly interface with Tailwind CSS
@@ -108,7 +108,7 @@ npx prisma studio  # Visual database interface
 - ✅ **Error Handling** - Graceful error recovery with retry functionality
 - ✅ **Modular Architecture** - Reusable components and custom hooks
 
-## 🔮 Planned Features
+## Planned Features
 
 - 🔄 **User Authentication** - Secure signup/login with Supabase
 - 🔄 **User-Specific Groups** - Personal group management
