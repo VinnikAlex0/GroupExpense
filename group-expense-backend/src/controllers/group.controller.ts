@@ -21,3 +21,15 @@ export const createGroup = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const getGroups = async (_req: Request, res: Response) => {
+  try {
+    const groups = await prisma.group.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    res.status(200).json(groups);
+  } catch (err) {
+    console.error("Failed to fetch groups:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
