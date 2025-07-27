@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import { ProtectedRoute, LoadingSpinner } from "./components";
 import GroupsPage from "./pages/GroupsPage";
+import GroupDetailsPage from "./pages/GroupDetailsPage";
 import AuthPage from "./pages/AuthPage";
 
 function App() {
@@ -28,6 +29,14 @@ function App() {
           element={
             <ProtectedRoute>
               <GroupsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups/:id"
+          element={
+            <ProtectedRoute>
+              <GroupDetailsPage />
             </ProtectedRoute>
           }
         />

@@ -15,12 +15,14 @@ interface TopNavigationProps {
   title?: string;
   // Future extensibility props
   children?: React.ReactNode; // For tabs, additional nav items
+  leftSection?: React.ReactNode; // For back buttons, menu toggles, etc.
   rightSection?: React.ReactNode; // For custom right-side content
 }
 
 export const TopNavigation: React.FC<TopNavigationProps> = ({
   title = "GroupExpense",
   children,
+  leftSection,
   rightSection,
 }) => {
   const { user, signOut } = useAuth();
@@ -46,8 +48,9 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
     <div className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Left Section - Logo/Title */}
-          <div className="flex items-center">
+          {/* Left Section - Custom Content and Logo/Title */}
+          <div className="flex items-center space-x-3">
+            {leftSection}
             <Text size="xl" fw={600} className="text-gray-800">
               {title}
             </Text>
