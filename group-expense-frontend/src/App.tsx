@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
-import { ProtectedRoute, LoadingSpinner } from "./components";
+import { ProtectedRoute, LoadingSpinner, Layout } from "./components";
 import GroupsPage from "./pages/GroupsPage";
 import GroupDetailsPage from "./pages/GroupDetailsPage";
 import AuthPage from "./pages/AuthPage";
@@ -28,7 +28,9 @@ function App() {
           path="/groups"
           element={
             <ProtectedRoute>
-              <GroupsPage />
+              <Layout title="GroupExpense">
+                <GroupsPage />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -36,7 +38,9 @@ function App() {
           path="/groups/:id"
           element={
             <ProtectedRoute>
-              <GroupDetailsPage />
+              <Layout showBackButton={true}>
+                <GroupDetailsPage />
+              </Layout>
             </ProtectedRoute>
           }
         />
