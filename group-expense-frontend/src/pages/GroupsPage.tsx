@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Container, Title, Button } from "@mantine/core";
 import { useGroups } from "../hooks/useGroups";
 import { Group as GroupType, CreateGroupData } from "../services/groupService";
@@ -11,29 +12,19 @@ import {
 } from "../components";
 
 const GroupsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { groups, loading, error, creating, fetchGroups, createGroup } =
     useGroups();
   const [modalOpened, setModalOpened] = useState(false);
 
   const handleGroupClick = (group: GroupType) => {
-    // TODO: Navigate to group details page
-    console.log("Group clicked:", group);
+    navigate(`/groups/${group.id}`);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
-      <TopNavigation
-        title="GroupExpense"
-        rightSection={
-          <Button
-            onClick={() => setModalOpened(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            + Create Group
-          </Button>
-        }
-      />
+      <TopNavigation title="GroupExpense" />
 
       <Container size="md" py="xl">
         {/* Page Header */}
@@ -41,6 +32,12 @@ const GroupsPage: React.FC = () => {
           <Title order={2} className="text-gray-800">
             Your Groups
           </Title>
+          <Button
+            onClick={() => setModalOpened(true)}
+            className="bg-blue-600 hover:bg-blue-700 mt-8"
+          >
+            + Create Group
+          </Button>
         </div>
 
         {/* Loading State */}
