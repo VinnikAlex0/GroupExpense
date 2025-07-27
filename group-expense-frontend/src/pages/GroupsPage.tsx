@@ -8,7 +8,6 @@ import {
   CreateGroupModal,
   ErrorAlert,
   LoadingSpinner,
-  TopNavigation,
 } from "../components";
 
 const GroupsPage: React.FC = () => {
@@ -22,46 +21,41 @@ const GroupsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation */}
-      <TopNavigation title="GroupExpense" />
+    <Container size="md" py="xl">
+      {/* Page Header */}
+      <div className="mb-6">
+        <Title order={2} className="text-gray-800">
+          Your Groups
+        </Title>
+        <Button
+          onClick={() => setModalOpened(true)}
+          className="bg-blue-600 hover:bg-blue-700 mt-8"
+        >
+          + Create Group
+        </Button>
+      </div>
 
-      <Container size="md" py="xl">
-        {/* Page Header */}
-        <div className="mb-6">
-          <Title order={2} className="text-gray-800">
-            Your Groups
-          </Title>
-          <Button
-            onClick={() => setModalOpened(true)}
-            className="bg-blue-600 hover:bg-blue-700 mt-8"
-          >
-            + Create Group
-          </Button>
-        </div>
+      {/* Loading State */}
+      {loading && <LoadingSpinner />}
 
-        {/* Loading State */}
-        {loading && <LoadingSpinner />}
+      {/* Error State */}
+      {error && <ErrorAlert message={error} onRetry={fetchGroups} />}
 
-        {/* Error State */}
-        {error && <ErrorAlert message={error} onRetry={fetchGroups} />}
+      {/* Groups List */}
+      <GroupList
+        groups={groups}
+        loading={loading}
+        onGroupClick={handleGroupClick}
+      />
 
-        {/* Groups List */}
-        <GroupList
-          groups={groups}
-          loading={loading}
-          onGroupClick={handleGroupClick}
-        />
-
-        {/* Create Group Modal */}
-        <CreateGroupModal
-          opened={modalOpened}
-          onClose={() => setModalOpened(false)}
-          onSubmit={createGroup}
-          loading={creating}
-        />
-      </Container>
-    </div>
+      {/* Create Group Modal */}
+      <CreateGroupModal
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+        onSubmit={createGroup}
+        loading={creating}
+      />
+    </Container>
   );
 };
 
