@@ -139,6 +139,12 @@ REACT_APP_SESSION_WARNING_MINUTES=5
 - ✅ **Session Management** - Automatic session timeout with configurable duration and user warnings
 - ✅ **User-Specific Groups** - Personal group management with auth protection
 - ✅ **Group Management** - Create and view expense groups
+- ✅ **Group Invitations** - Invite members by email (BeemIt-style automatic addition)
+- ✅ **Member Management** - Add, update, and remove group members with role system
+- ✅ **Expense Tracking** - Add and categorize shared expenses
+- ✅ **Expense Categories** - Organize expenses by type (food, transport, etc.)
+- ✅ **Real-time Updates** - Live updates when group members add expenses
+- ✅ **Notification System** - Real-time notifications with dropdown UI
 - ✅ **Responsive Design** - Mobile-friendly interface with Tailwind CSS
 - ✅ **Form Validation** - Real-time validation with helpful error messages
 - ✅ **Loading States** - Smooth UX with loading spinners and notifications
@@ -147,12 +153,9 @@ REACT_APP_SESSION_WARNING_MINUTES=5
 
 ## Planned Features
 
-- 🔄 **Expense Tracking** - Add and categorize shared expenses
 - 🔄 **Smart Splitting** - Flexible expense splitting (equal, percentage, custom)
 - 🔄 **Debt Calculation** - Automatic "who owes whom" calculations
 - 🔄 **Settlement Tracking** - Mark payments as settled
-- 🔄 **Real-time Updates** - Live updates when group members add expenses
-- 🔄 **Expense Categories** - Organize expenses by type (food, transport, etc.)
 - 🔄 **Receipt Upload** - Photo attachments for expense verification
 - 🔄 **Export Reports** - PDF/Excel summaries for group expenses
 

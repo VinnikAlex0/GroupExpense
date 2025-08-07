@@ -1,131 +1,50 @@
-# GroupExpense – Expense Splitter
+# GroupExpense Backend
 
-Full-stack web app that simplifies who owes what and makes settling up easy. Features automatic group invitations, real-time notifications, and comprehensive expense tracking.
+Node.js + Express API server with TypeScript, Prisma ORM, and Supabase integration.
 
----
-
-## Tech Stack
-
-### Frontend
-
-- **React 18** + **TypeScript** - Component-based UI with type safety
-- **Tailwind CSS v3** - Utility-first CSS framework for rapid styling
-- **Mantine UI v7** - Rich component library with forms, notifications, and modals
-- **React Router DOM v7** - Client-side routing and navigation
-- **Axios** - HTTP client for API communication
-- **Custom Hooks** - Modular state management (useGroups, useExpenses, useNotifications)
-
-### Backend
-
-- **Node.js** + **Express** - RESTful API server
-- **TypeScript** - Type-safe backend development
-- **Prisma ORM** - Database modeling and migrations
-- **PostgreSQL** - Relational database for data persistence
-- **Supabase Integration** - User lookup and authentication
-
-### Authentication
-
-- **Supabase** - Authentication, authorization, and user management
-- **JWT Middleware** - Backend route protection and user verification
-- **Auth Context** - Frontend authentication state management
-- **Protected Routes** - Route-level access control
-
-### Development Tools
-
-- **Docker** + **Docker Compose** - Containerized database
-- **Prisma Studio** - Visual database browser
-- **ESLint** + **TypeScript** - Code quality and type checking
-
----
-
-## Architecture
-
-### Frontend Structure
-
-`
-src/
-├── components/          # Reusable UI components
-│   ├── GroupCard.tsx   # Group display component
-│   ├── CreateGroupModal.tsx # Group creation modal
-│   ├── AddExpenseModal.tsx # Expense creation modal
-│   ├── InviteMembersModal.tsx # Member invitation modal
-│   ├── NotificationsDropdown.tsx # Notification dropdown
-│   └── TopNavigation.tsx # Navigation with notifications
-├── contexts/            # React contexts (AuthContext)
-├── hooks/               # Custom React hooks
-│   ├── useGroups.ts    # Group management
-│   ├── useExpenses.ts  # Expense management
-│   └── useNotifications.ts # Notification management
-├── services/            # API communication layer
-├── pages/               # Main page components
-└── App.tsx             # Routing with protected routes
-`
-
-### Backend Structure
-
-`
-src/
-├── controllers/         # Request handlers
-│   ├── group.controller.ts # Group management
-│   ├── expense.controller.ts # Expense management
-│   ├── notification.controller.ts # Notification system
-│   └── user.controller.ts # User management
-├── middleware/          # Auth middleware for protected routes
-├── routes/             # API route definitions with auth protection
-├── prisma/             # Database layer with migrations
-└── server.ts           # Express app setup
-`
-
----
-
-## Quick Start
+## 🚀 Quick Setup
 
 ### Prerequisites
+- Node.js 18+
+- Docker and Docker Compose
+- Supabase project
 
-- **Node.js** 18+ and **npm**
-- **Docker** and **Docker Compose**
-
-### 1. Start Database
-
+### 1. Install Dependencies
 `ash
-docker-compose up -d
-`
-
-### 2. Setup Backend
-
-`ash
-cd group-expense-backend
 npm install
+`
 
-# Create .env file with your Supabase credentials
+### 2. Environment Setup
+`ash
+# Copy example environment file
 cp .env.example .env
-# Edit .env with your actual Supabase service role key
 
+# Edit .env with your Supabase credentials
+# Get your service role key from Supabase Dashboard → Settings → API
+`
+
+### 3. Database Setup
+`ash
+# Start PostgreSQL database
+docker-compose up -d
+
+# Run database migrations
 npx prisma migrate deploy
-npm run dev  # Starts on http://localhost:4000
+
+# Generate Prisma client
+npx prisma generate
 `
 
-### 3. Setup Frontend
-
+### 4. Start Development Server
 `ash
-cd ../group-expense-frontend
-npm install --legacy-peer-deps  # Handle Mantine version conflicts
-npm start  # Starts on http://localhost:3000
+npm run dev
+# Server runs on http://localhost:4000
 `
 
-### 4. Optional: Database Browser
+## 🔧 Environment Variables
 
-`ash
-npx prisma studio  # Visual database interface
-`
+Create a .env file in the backend directory:
 
----
-
-## Configuration
-
-### Environment Variables
-
-**Backend (.env):**
 `nv
 # Supabase Configuration
 SUPABASE_URL=your-supabase-project-url
@@ -139,88 +58,22 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/groupexpense
 PORT=4000
 `
 
-**Frontend (.env):**
-`nv
-REACT_APP_SUPABASE_URL=your-supabase-project-url
-REACT_APP_SUPABASE_ANON_KEY=your-anon-key
-REACT_APP_SESSION_TIMEOUT_MINUTES=30
-REACT_APP_SESSION_WARNING_MINUTES=5
-`
+## 📊 Database Schema
 
-### Session Timeout Settings
+### Models
+- **Group** - Expense groups with metadata
+- **GroupMember** - Many-to-many relationship with roles (OWNER, ADMIN, MEMBER)
+- **Expense** - Individual expenses with categories
+- **Category** - Expense categorization system
+- **Notification** - User notification system with types and metadata
 
-You can customize session timeout behavior by adding these environment variables to your frontend .env file:
+### Migrations
+All migrations are in prisma/migrations/:
+- Initial schema setup
+- Multi-user architecture
+- Notification system
 
-`ash
-# Session timeout in minutes (default: 120 minutes = 2 hours)
-REACT_APP_SESSION_TIMEOUT_MINUTES=120
-
-# Warning time before session expires in minutes (default: 5 minutes)
-REACT_APP_SESSION_WARNING_MINUTES=5
-`
-
-**Session Management Features:**
-
-- ✅ **Automatic logout** after configured timeout period
-- ✅ **Warning notifications** 5 minutes before expiry (configurable)
-- ✅ **Session extension** on user activity (clicks, typing, scrolling)
-- ✅ **Manual session refresh** via the session status indicator
-- ✅ **Visual session timer** appears when session expires within 30 minutes
-
----
-
-## Current Features
-
-### 🔐 Authentication & Security
-- ✅ **User Authentication** - Secure signup/login with Supabase
-- ✅ **Session Management** - Automatic session timeout with configurable duration and user warnings
-- ✅ **Protected Routes** - Route-level access control
-- ✅ **JWT Middleware** - Backend route protection
-
-### 👥 Group Management
-- ✅ **Create Groups** - Create expense groups with descriptions
-- ✅ **View Groups** - See all groups you're a member of
-- ✅ **Group Details** - View group information and members
-- ✅ **Member Roles** - OWNER, ADMIN, MEMBER role system
-- ✅ **Group Invitations** - Invite members by email (BeemIt-style automatic addition)
-
-### 👤 Member Management
-- ✅ **Invite Members** - Add members to groups via email
-- ✅ **Automatic Addition** - Members are added immediately (no acceptance flow)
-- ✅ **Supabase Integration** - Real user lookup in Supabase
-- ✅ **Pending Memberships** - Handle users who haven't signed up yet
-- ✅ **Role Management** - Assign different roles to members
-
-### 🔔 Notification System
-- ✅ **Real-time Notifications** - Dropdown notification system
-- ✅ **Hover-to-Read** - Notifications marked as read on hover
-- ✅ **Unread Count** - Badge showing unread notification count
-- ✅ **Notification Types** - Group invitations, expense updates, role changes
-- ✅ **Beautiful UI** - Tasteful color coding for unread notifications
-
-### 💰 Expense Tracking
-- ✅ **Add Expenses** - Create expenses with amounts, descriptions, and categories
-- ✅ **Expense Categories** - Organize expenses by type (food, transport, etc.)
-- ✅ **Group Expenses** - All expenses tied to specific groups
-- ✅ **Expense Summary** - Total amounts, expense counts, and top categories
-- ✅ **Your Share Calculation** - Automatic equal split calculations
-
-### 🎨 User Experience
-- ✅ **Responsive Design** - Mobile-friendly interface with Tailwind CSS
-- ✅ **Form Validation** - Real-time validation with helpful error messages
-- ✅ **Loading States** - Smooth UX with loading spinners and notifications
-- ✅ **Error Handling** - Graceful error recovery with retry functionality
-- ✅ **Modular Architecture** - Reusable components and custom hooks
-
-### 📊 Data Management
-- ✅ **Database Migrations** - Version-controlled schema changes
-- ✅ **Prisma ORM** - Type-safe database operations
-- ✅ **Real-time Updates** - Groups list refreshes when members are added
-- ✅ **Data Persistence** - All data stored in PostgreSQL
-
----
-
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Groups
 - POST /api/groups - Create a new group
@@ -253,62 +106,88 @@ REACT_APP_SESSION_WARNING_MINUTES=5
 - POST /api/user/migrate-pending - Migrate pending memberships
 - GET /api/user/profile - Get user profile
 
----
+## 🔐 Authentication
 
-## Planned Features
+All endpoints require authentication via JWT tokens from Supabase.
 
-- 🔄 **Smart Splitting** - Flexible expense splitting (equal, percentage, custom)
-- 🔄 **Debt Calculation** - Automatic "who owes whom" calculations
-- 🔄 **Settlement Tracking** - Mark payments as settled
-- 🔄 **Receipt Upload** - Photo attachments for expense verification
-- 🔄 **Export Reports** - PDF/Excel summaries for group expenses
-- 🔄 **Email Notifications** - Email alerts for group invitations and expense updates
-- 🔄 **Real-time Collaboration** - WebSocket updates for live expense tracking
+### Middleware
+- uthenticateUser - Verifies JWT tokens and adds user to request
 
----
+### User Lookup
+- Supabase integration for user lookup during member invitations
+- Pending memberships for users who haven't signed up yet
 
-## Development Notes
+## 🛠 Development
 
-### Code Style
+### Scripts
+`ash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npx prisma studio    # Open database browser
+npx prisma migrate dev --name <name>  # Create new migration
+`
 
-- **TypeScript** - Strict typing throughout
-- **Component Composition** - Small, focused, reusable components
-- **Custom Hooks** - Business logic separated from UI components
-- **Service Layer** - API calls isolated in service files
-- **Error Boundaries** - Graceful error handling at component level
+### Database Management
+`ash
+# View database in browser
+npx prisma studio
 
-### State Management
+# Reset database (development only)
+npx prisma migrate reset
 
-- **Local State** - useState for component-specific state
-- **Custom Hooks** - useGroups, useExpenses, useNotifications for feature-specific state
-- **Future**: Redux/Zustand when cross-component state complexity grows
+# Generate client after schema changes
+npx prisma generate
+`
 
-### Styling Approach
+## 📁 Project Structure
 
-- **Tailwind CSS** - Utility classes for rapid development
-- **Mantine Components** - Pre-built components for forms, modals, alerts
-- **Responsive Design** - Mobile-first approach
+`
+src/
+├── controllers/         # Request handlers
+│   ├── group.controller.ts      # Group management
+│   ├── expense.controller.ts    # Expense management
+│   ├── notification.controller.ts # Notification system
+│   └── user.controller.ts       # User management
+├── middleware/          # Auth middleware
+├── routes/             # API route definitions
+├── lib/                # External service integrations
+│   └── supabase.ts     # Supabase client configuration
+├── prisma/             # Database layer
+│   ├── schema.prisma   # Database schema
+│   └── migrations/     # Database migrations
+└── server.ts           # Express app setup
+`
 
-### Database Schema
+## 🔍 Troubleshooting
 
-- **Groups** - Group information and metadata
-- **GroupMembers** - Many-to-many relationship with roles
-- **Expenses** - Individual expenses with categories
-- **Categories** - Expense categorization system
-- **Notifications** - User notification system with types and metadata
+### Common Issues
 
----
+1. **Database Connection Error**
+   - Ensure Docker is running: docker-compose up -d
+   - Check DATABASE_URL in .env
 
-## Contributing
+2. **Supabase Authentication Error**
+   - Verify SUPABASE_SERVICE_ROLE_KEY in .env
+   - Check Supabase project settings
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+3. **Prisma Client Error**
+   - Run 
+px prisma generate after schema changes
+   - Restart development server
 
----
+### Logs
+- Server logs appear in console during development
+- Database queries logged when DEBUG=true
 
-## License
+## 📚 Dependencies
 
-MIT License - see LICENSE file for details
+### Core
+- **express** - Web framework
+- **@prisma/client** - Database ORM
+- **@supabase/supabase-js** - Supabase integration
+
+### Development
+- **typescript** - Type safety
+- **@types/node** - Node.js types
+- **nodemon** - Development server with auto-restart
