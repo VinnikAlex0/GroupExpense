@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Group,
-  Button,
   Text,
   Menu,
   Avatar,
   UnstyledButton,
-  rem,
+  ActionIcon,
+  Indicator,
 } from "@mantine/core";
+import { IconBell } from "@tabler/icons-react";
 import { useAuth } from "../contexts/AuthContext";
 import { SessionStatus } from "./SessionStatus";
+import { useNotifications } from "../hooks/useNotifications";
+import { NotificationsDropdown } from "./NotificationsDropdown";
 
 interface TopNavigationProps {
   title?: string;
@@ -26,6 +28,13 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   rightSection,
 }) => {
   const { user, signOut } = useAuth();
+  const {
+    notifications,
+    unreadCount,
+    loading: notificationsLoading,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
   const handleLogout = async () => {
     try {
@@ -67,6 +76,15 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             {/* Custom right section content */}
             {rightSection}
 
+            {/* Notifications Dropdown */}
+            <NotificationsDropdown
+              notifications={notifications}
+              unreadCount={unreadCount}
+              loading={notificationsLoading}
+              onMarkAsRead={markAsRead}
+              onMarkAllAsRead={markAllAsRead}
+            />
+
             <Menu shadow="md" width={200} position="bottom-end">
               <Menu.Target>
                 <UnstyledButton className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
@@ -89,7 +107,14 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
                 <Menu.Item>Profile Settings</Menu.Item>
 
-                <Menu.Item>Notifications</Menu.Item>
+                <Menu.Item>
+                  Notifications
+                  {unreadCount > 0 && (
+                    <Text size="xs" c="red" component="span" ml={4}>
+                      ({unreadCount})
+                    </Text>
+                  )}
+                </Menu.Item>
 
                 <Menu.Divider />
 
