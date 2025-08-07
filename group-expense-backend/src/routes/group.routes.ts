@@ -16,6 +16,16 @@ import {
   getCategories,
   getGroupSummary,
 } from "../controllers/expense.controller";
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  getUnreadNotificationCount,
+} from "../controllers/notification.controller";
+import {
+  migratePendingMemberships,
+  getUserProfile,
+} from "../controllers/user.controller";
 import { authenticateUser } from "../middleware/auth.middleware";
 
 const router = Router();
@@ -50,5 +60,27 @@ router.get("/groups/:groupId/summary", authenticateUser, getGroupSummary);
 
 // Category routes
 router.get("/categories", authenticateUser, getCategories);
+
+// Notification routes
+router.get("/notifications", authenticateUser, getNotifications);
+router.get(
+  "/notifications/unread-count",
+  authenticateUser,
+  getUnreadNotificationCount
+);
+router.put("/notifications/:id/read", authenticateUser, markNotificationAsRead);
+router.put(
+  "/notifications/mark-all-read",
+  authenticateUser,
+  markAllNotificationsAsRead
+);
+
+// User routes
+router.post(
+  "/user/migrate-pending",
+  authenticateUser,
+  migratePendingMemberships
+);
+router.get("/user/profile", authenticateUser, getUserProfile);
 
 export default router;

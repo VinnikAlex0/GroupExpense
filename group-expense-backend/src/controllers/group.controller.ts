@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import prisma from "../prisma/client";
-import { Role } from "@prisma/client";
+import { Role, NotificationType } from "@prisma/client";
+import { supabase } from "../lib/supabase";
+import { createNotification } from "./notification.controller";
 
 export const createGroup = async (
   req: Request,
@@ -241,24 +243,107 @@ export const addGroupMember = async (
       return;
     }
 
-    // For now, we'll add the member directly by email
-    // In a full implementation, you'd send an invitation
-    const newMember = await prisma.groupMember.create({
-      data: {
-        groupId: parseInt(id),
-        userId: `temp_${Date.now()}_${email}`, // Temporary user ID
-        email: email.trim(),
-        role: role,
-      },
-      select: {
-        id: true,
-        userId: true,
-        email: true,
-        name: true,
-        role: true,
-        joinedAt: true,
-      },
+    // Get group information for notification
+    const group = await prisma.group.findUnique({
+      where: { id: parseInt(id) },
+      select: { name: true },
     });
+
+    if (!group) {
+      res.status(404).json({
+        error: "Group not found",
+      });
+      return;
+    }
+
+    // Look up user in Supabase by email
+    const { data: supabaseUsers, error: supabaseError } =
+      await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000, // Supabase limitation
+      });
+
+    if (supabaseError) {
+      console.error("Error fetching users from Supabase:", supabaseError);
+      res.status(500).json({
+        error: "Failed to lookup user",
+      });
+      return;
+    }
+
+    // Find user by email
+    const invitedUser = supabaseUsers.users.find(
+      (user) => user.email?.toLowerCase() === email.toLowerCase()
+    );
+
+    let newMember;
+    let userId: string;
+    let userName: string | undefined;
+
+    if (invitedUser) {
+      // User exists in Supabase, use their real ID
+      userId = invitedUser.id;
+      userName =
+        invitedUser.user_metadata?.name || invitedUser.user_metadata?.full_name;
+
+      // Add member to group
+      newMember = await prisma.groupMember.create({
+        data: {
+          groupId: parseInt(id),
+          userId: userId,
+          email: email.trim().toLowerCase(),
+          name: userName,
+          role: role,
+        },
+        select: {
+          id: true,
+          userId: true,
+          email: true,
+          name: true,
+          role: true,
+          joinedAt: true,
+        },
+      });
+
+      // Create notification for the invited user
+      await createNotification(
+        userId,
+        NotificationType.GROUP_INVITATION,
+        "You've been added to a group!",
+        `${req.user.email} added you to "${group.name}"`,
+        parseInt(id),
+        {
+          inviterEmail: req.user.email,
+          groupName: group.name,
+          role: role,
+        }
+      );
+    } else {
+      // User doesn't exist yet, create with placeholder ID
+      // They'll be migrated when they sign up
+      userId = `pending_${Date.now()}_${email.toLowerCase()}`;
+
+      newMember = await prisma.groupMember.create({
+        data: {
+          groupId: parseInt(id),
+          userId: userId,
+          email: email.trim().toLowerCase(),
+          name: null,
+          role: role,
+        },
+        select: {
+          id: true,
+          userId: true,
+          email: true,
+          name: true,
+          role: true,
+          joinedAt: true,
+        },
+      });
+
+      // Note: No notification created for non-existent users
+      // They'll get notified when they sign up and we migrate their data
+    }
 
     res.status(201).json(newMember);
   } catch (err: any) {
