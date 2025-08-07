@@ -16,8 +16,9 @@ model Group {
   updatedAt   DateTime @updatedAt
 
   // Relationships
-  members     GroupMember[]
-  expenses    Expense[]
+  members       GroupMember[]
+  expenses      Expense[]
+  notifications Notification[]
 }
 
 // Many-to-many relationship between users and groups
@@ -74,6 +75,36 @@ model Expense {
   @@index([groupId])
   @@index([paidById])
   @@index([date])
+}
+
+// Notifications for users (group invitations, etc.)
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String   // Supabase user ID of the recipient
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Optional relationship data based on notification type
+  groupId   Int?     // For group-related notifications
+  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  // Metadata as JSON for additional notification data
+  metadata  Json?    // Can store additional data like inviter info, etc.
+  
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+// Types of notifications
+enum NotificationType {
+  GROUP_INVITATION    // User was added to a group
+  EXPENSE_ADDED      // New expense was added to a group
+  EXPENSE_UPDATED    // Expense was updated
+  ROLE_CHANGED       // User's role in a group was changed
 }
 
 // User roles within groups
