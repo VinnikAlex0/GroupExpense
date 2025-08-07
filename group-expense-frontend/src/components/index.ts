@@ -3,6 +3,8 @@ export { GroupCard } from "./GroupCard";
 export { GroupList } from "./GroupList";
 export { CreateGroupModal } from "./CreateGroupModal";
 export { AddExpenseModal } from "./AddExpenseModal";
+export { InviteMembersModal } from "./InviteMembersModal";
+export { NotificationsDropdown } from "./NotificationsDropdown";
 export { ErrorAlert } from "./ErrorAlert";
 export { LoadingSpinner } from "./LoadingSpinner";
 export { ProtectedRoute } from "./ProtectedRoute";

@@ -82,5 +82,6 @@ export const useGroups = () => {
     creating,
     fetchGroups,
     createGroup,
+    refreshGroups: fetchGroups, // Alias for clarity
   };
 };

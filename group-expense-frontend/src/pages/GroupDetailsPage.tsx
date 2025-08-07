@@ -18,11 +18,23 @@ import {
   IconArrowLeft,
   IconPlus,
   IconCurrencyDollar,
+  IconUserPlus,
 } from "@tabler/icons-react";
 import { useExpenses } from "../hooks/useExpenses";
-import { groupService, Group as GroupType } from "../services/groupService";
+import { useGroups } from "../hooks/useGroups";
+import {
+  groupService,
+  Group as GroupType,
+  Role,
+} from "../services/groupService";
 import { CreateExpenseData } from "../services/expenseService";
-import { LoadingSpinner, ErrorAlert, AddExpenseModal } from "../components";
+import {
+  LoadingSpinner,
+  ErrorAlert,
+  AddExpenseModal,
+  InviteMembersModal,
+} from "../components";
+import { notifications } from "@mantine/notifications";
 
 const GroupDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +45,8 @@ const GroupDetailsPage: React.FC = () => {
   const [groupLoading, setGroupLoading] = useState(true);
   const [groupError, setGroupError] = useState<string | null>(null);
   const [addExpenseModalOpen, setAddExpenseModalOpen] = useState(false);
+  const [inviteMembersModalOpen, setInviteMembersModalOpen] = useState(false);
+  const [inviting, setInviting] = useState(false);
 
   const {
     expenses,
@@ -44,6 +58,8 @@ const GroupDetailsPage: React.FC = () => {
     createExpense,
     deleteExpense,
   } = useExpenses(groupId);
+
+  const { refreshGroups } = useGroups();
 
   // Fetch group details
   useEffect(() => {
@@ -83,6 +99,43 @@ const GroupDetailsPage: React.FC = () => {
       month: "short",
       day: "numeric",
     });
+  };
+
+  const handleInviteMember = async (
+    email: string,
+    role: Role
+  ): Promise<boolean> => {
+    setInviting(true);
+    try {
+      const newMember = await groupService.addMember(groupId, { email, role });
+
+      // Update the group state to include the new member
+      setGroup((prevGroup) => {
+        if (!prevGroup) return prevGroup;
+        return {
+          ...prevGroup,
+          members: [...prevGroup.members, newMember],
+        };
+      });
+
+      // Refresh the groups list so the invited user sees the new group
+      // This ensures the group appears on their groups page immediately
+      await refreshGroups();
+
+      return true;
+    } catch (error: any) {
+      console.error("Failed to invite member:", error);
+      notifications.show({
+        title: "Failed to Invite Member",
+        message:
+          error.message ||
+          "There was an error inviting the member. Please try again.",
+        color: "red",
+      });
+      return false;
+    } finally {
+      setInviting(false);
+    }
   };
 
   const handleCreateExpense = async (
@@ -136,9 +189,23 @@ const GroupDetailsPage: React.FC = () => {
 
           {/* Members Section */}
           <div>
-            <Text fw={500} mb="sm">
-              Members ({String(group.members?.length || 0)})
-            </Text>
+            <Group justify="space-between" align="center" mb="sm">
+              <Text fw={500}>
+                Members ({String(group.members?.length || 0)})
+              </Text>
+              {(group.userRole === Role.OWNER ||
+                group.userRole === Role.ADMIN) && (
+                <Button
+                  size="xs"
+                  variant="light"
+                  leftSection={<IconUserPlus size={14} />}
+                  onClick={() => setInviteMembersModalOpen(true)}
+                  loading={inviting}
+                >
+                  Invite Member
+                </Button>
+              )}
+            </Group>
             <Group gap="xs">
               {group.members.map((member) => (
                 <Group key={member.id} gap="xs">
@@ -338,6 +405,17 @@ const GroupDetailsPage: React.FC = () => {
         loading={creating}
         groupId={groupId}
       />
+
+      {/* Invite Members Modal */}
+      {group && (
+        <InviteMembersModal
+          opened={inviteMembersModalOpen}
+          onClose={() => setInviteMembersModalOpen(false)}
+          onSubmit={handleInviteMember}
+          loading={inviting}
+          groupName={group.name}
+        />
+      )}
     </Container>
   );
 };
