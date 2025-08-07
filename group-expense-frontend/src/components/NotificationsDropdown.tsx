@@ -164,9 +164,9 @@ export const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                       <Text size="xs" c="dimmed" mt={2} lineClamp={1}>
                         {notification.message}
                       </Text>
-                      {notification.groupName && (
+                      {notification.group?.name && (
                         <Badge size="xs" variant="outline" mt={4}>
-                          {notification.groupName}
+                          {notification.group.name}
                         </Badge>
                       )}
                     </div>

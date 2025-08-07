@@ -1,10 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
 
 // Backend Supabase client for authentication verification
-const supabaseUrl =
-  process.env.SUPABASE_URL || "https://kgozphgdkdtncmgmrvnz.supabase.co";
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "your-service-role-key-here";
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing required Supabase environment variables');
+}
 
 // Create Supabase client with service role key for backend operations
 export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -15,9 +17,11 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 // For JWT verification, we'll use the anon key client
-const supabaseAnonKey =
-  process.env.SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnb3pwaGdka2R0bmNtZ21ydm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5ODY1NDMsImV4cCI6MjA2ODU2MjU0M30.DYzj-DJc0bBDV832GEWc8Ergk-7wcr6Gr7afuG0jpV4";
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseAnonKey) {
+  throw new Error('Missing SUPABASE_ANON_KEY environment variable');
+}
 
 export const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
 

@@ -4,7 +4,6 @@ export { GroupList } from "./GroupList";
 export { CreateGroupModal } from "./CreateGroupModal";
 export { AddExpenseModal } from "./AddExpenseModal";
 export { InviteMembersModal } from "./InviteMembersModal";
-export { NotificationsModal } from "./NotificationsModal";
 export { NotificationsDropdown } from "./NotificationsDropdown";
 export { ErrorAlert } from "./ErrorAlert";
 export { LoadingSpinner } from "./LoadingSpinner";

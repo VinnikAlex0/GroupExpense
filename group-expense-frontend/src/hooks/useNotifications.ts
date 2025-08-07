@@ -58,35 +58,6 @@ export const useNotifications = () => {
     }
   }, []);
 
-  // Create a mock notification for testing
-  const createMockNotification = useCallback(
-    async (
-      title: string,
-      message: string,
-      type?: string,
-      groupId?: number,
-      groupName?: string
-    ) => {
-      try {
-        await notificationService.createMockNotification(
-          title,
-          message,
-          type,
-          groupId,
-          groupName
-        );
-        await fetchNotifications(); // Refresh the list
-      } catch (err: any) {
-        console.error("Failed to create mock notification:", err);
-      }
-    },
-    [fetchNotifications]
-  );
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
-
   // Poll for updates every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -104,6 +75,5 @@ export const useNotifications = () => {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
-    createMockNotification,
   };
 };
