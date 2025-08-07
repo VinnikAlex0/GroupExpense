@@ -11,29 +11,27 @@ React + TypeScript frontend with Mantine UI, Tailwind CSS, and Supabase authenti
 
 ### 1. Install Dependencies
 
-`ash
+```bash
 npm install --legacy-peer-deps
-`
+```
 
 ### 2. Environment Setup
 
-Create a .env file in the frontend directory:
+Create a `.env` file in the frontend directory:
 
-`nv
+```env
 REACT_APP_SUPABASE_URL=your-supabase-project-url
 REACT_APP_SUPABASE_ANON_KEY=your-anon-key
 REACT_APP_SESSION_TIMEOUT_MINUTES=30
 REACT_APP_SESSION_WARNING_MINUTES=5
-`
+```
 
 ### 3. Start Development Server
 
-`ash
+```bash
 npm start
-
 # App runs on http://localhost:3000
-
-`
+```
 
 ## 🎨 UI Components
 
@@ -57,9 +55,9 @@ npm start
 
 ### useGroups
 
-`	ypescript
+```typescript
 const { groups, loading, error, createGroup, refreshGroups } = useGroups();
-`
+```
 
 - Fetch user's groups
 - Create new groups
@@ -67,9 +65,9 @@ const { groups, loading, error, createGroup, refreshGroups } = useGroups();
 
 ### useExpenses
 
-`	ypescript
+```typescript
 const { expenses, categories, summary, createExpense } = useExpenses(groupId);
-`
+```
 
 - Fetch group expenses
 - Get expense categories
@@ -78,9 +76,9 @@ const { expenses, categories, summary, createExpense } = useExpenses(groupId);
 
 ### useNotifications
 
-`	ypescript
+```typescript
 const { notifications, unreadCount, markAsRead } = useNotifications();
-`
+```
 
 - Fetch user notifications
 - Mark notifications as read
@@ -120,12 +118,12 @@ const { notifications, unreadCount, markAsRead } = useNotifications();
 
 ### Scripts
 
-`ash
+```bash
 npm start          # Start development server
 npm run build      # Build for production
 npm test           # Run tests
 npm run eject      # Eject from Create React App
-`
+```
 
 ### Available Scripts
 
@@ -136,7 +134,8 @@ npm run eject      # Eject from Create React App
 
 ## 📁 Project Structure
 
-`src/
+```
+src/
 ├── components/          # Reusable UI components
 │   ├── GroupCard.tsx           # Group display component
 │   ├── CreateGroupModal.tsx    # Group creation modal
@@ -163,7 +162,8 @@ npm run eject      # Eject from Create React App
 │   └── notificationService.ts  # Notification API calls
 ├── lib/                 # External integrations
 │   └── supabase.ts             # Supabase client
-└── App.tsx             # Main app component with routing`
+└── App.tsx             # Main app component with routing
+```
 
 ## 🎨 Styling
 
@@ -214,8 +214,7 @@ npm run eject      # Eject from Create React App
    - Check Supabase project settings
 
 3. **Build Errors**
-   - Clear node_modules and reinstall:
-     m -rf node_modules && npm install
+   - Clear node_modules and reinstall: `rm -rf node_modules && npm install`
    - Check for TypeScript errors
 
 ### Development Tips
