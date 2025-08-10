@@ -1,15 +1,9 @@
-import React, { useState } from "react";
-import {
-  Text,
-  Menu,
-  Avatar,
-  UnstyledButton,
-  ActionIcon,
-  Indicator,
-} from "@mantine/core";
-import { IconBell } from "@tabler/icons-react";
+import React from "react";
+import { Text, Menu, Avatar, UnstyledButton } from "@mantine/core";
+import { IconSettings, IconLogout } from "@tabler/icons-react";
+// import { IconBell } from "@tabler/icons-react";
 import { useAuth } from "../contexts/AuthContext";
-import { SessionStatus } from "./SessionStatus";
+// SessionStatus removed per mobile/UX simplification
 import { useNotifications } from "../hooks/useNotifications";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 
@@ -68,10 +62,9 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
           {/* Center Section - Navigation Items (Future: Tabs, etc.) */}
           <div className="flex-1 flex justify-center">{children}</div>
 
-          {/* Right Section - Session Status, Custom Content, and User Menu */}
+          {/* Right Section - Custom Content and User Menu */}
           <div className="flex items-center space-x-4">
-            {/* Session Status */}
-            <SessionStatus />
+            {/* SessionStatus removed */}
 
             {/* Custom right section content */}
             {rightSection}
@@ -85,7 +78,8 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               onMarkAllAsRead={markAllAsRead}
             />
 
-            <Menu shadow="md" width={200} position="bottom-end">
+            {/* Account menu: desktop popover, mobile tray-like Drawer */}
+            <Menu shadow="md" width={320} position="bottom-end">
               <Menu.Target>
                 <UnstyledButton className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                   <Avatar color="blue" radius="xl" size={32}>
@@ -101,24 +95,23 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                   </div>
                 </UnstyledButton>
               </Menu.Target>
-
-              <Menu.Dropdown>
-                <Menu.Label>Account</Menu.Label>
-
-                <Menu.Item>Profile Settings</Menu.Item>
-
-                <Menu.Item>
-                  Notifications
-                  {unreadCount > 0 && (
-                    <Text size="xs" c="red" component="span" ml={4}>
-                      ({unreadCount})
-                    </Text>
-                  )}
+              <Menu.Dropdown className="p-3 sm:p-2">
+                <Menu.Label className="text-base sm:text-sm">
+                  Account
+                </Menu.Label>
+                <Menu.Item
+                  className="py-3 sm:py-2 text-base sm:text-sm rounded-md"
+                  leftSection={<IconSettings size={16} />}
+                >
+                  Settings
                 </Menu.Item>
-
                 <Menu.Divider />
-
-                <Menu.Item color="red" onClick={handleLogout}>
+                <Menu.Item
+                  className="py-3 sm:py-2 text-base sm:text-sm rounded-md"
+                  color="red"
+                  leftSection={<IconLogout size={16} color="#e03131" />}
+                  onClick={handleLogout}
+                >
                   Sign Out
                 </Menu.Item>
               </Menu.Dropdown>

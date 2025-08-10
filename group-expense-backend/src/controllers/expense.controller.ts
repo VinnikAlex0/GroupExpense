@@ -6,7 +6,15 @@ export const createExpense = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { amount, description, date, categoryId, groupId } = req.body;
+  const {
+    amount,
+    description,
+    date,
+    categoryId,
+    groupId,
+    participants,
+    shares,
+  } = req.body;
 
   // Validate required fields
   if (!amount || !description || !groupId) {
@@ -40,29 +48,123 @@ export const createExpense = async (
       return;
     }
 
-    // Create the expense
-    const newExpense = await prisma.expense.create({
-      data: {
-        amount: new Decimal(amount),
-        description: description.trim(),
-        date: date ? new Date(date) : new Date(),
-        groupId: parseInt(groupId),
-        paidById: req.user.id,
-        categoryId: categoryId ? parseInt(categoryId) : null,
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
-            color: true,
-          },
-        },
-      },
+    // Determine participant userIds
+    const allMembers = await prisma.groupMember.findMany({
+      where: { groupId: parseInt(groupId) },
+      select: { userId: true },
+      orderBy: { userId: "asc" },
     });
 
-    res.status(201).json(newExpense);
+    if (allMembers.length === 0) {
+      res.status(400).json({ error: "Group has no members" });
+      return;
+    }
+
+    const participantIds: string[] =
+      Array.isArray(participants) && participants.length > 0
+        ? Array.from(new Set(participants as string[]))
+        : allMembers.map((m) => m.userId);
+
+    // Validate participants are group members
+    const groupMemberIds = new Set(allMembers.map((m) => m.userId));
+    for (const uid of participantIds) {
+      if (!groupMemberIds.has(uid)) {
+        res.status(400).json({ error: "Participants must be group members" });
+        return;
+      }
+    }
+
+    // Build shares mapping
+    type IncomingShare = { userId: string; amount: number | string };
+    let finalShares: { userId: string; amount: Decimal }[] = [];
+    const totalCents = Math.round(Number(amount) * 100);
+
+    if (Array.isArray(shares) && (shares as IncomingShare[]).length > 0) {
+      // Validate provided shares
+      const seen = new Set<string>();
+      let sumCents = 0;
+      for (const s of shares as IncomingShare[]) {
+        if (!s || typeof s.userId !== "string") {
+          res.status(400).json({ error: "Invalid share entry" });
+          return;
+        }
+        if (!participantIds.includes(s.userId) || seen.has(s.userId)) {
+          res
+            .status(400)
+            .json({
+              error: "Shares must match participants with no duplicates",
+            });
+          return;
+        }
+        const shareAmt =
+          typeof s.amount === "string"
+            ? parseFloat(s.amount)
+            : Number(s.amount || 0);
+        if (shareAmt < 0) {
+          res.status(400).json({ error: "Share amount cannot be negative" });
+          return;
+        }
+        sumCents += Math.round(shareAmt * 100);
+        finalShares.push({ userId: s.userId, amount: new Decimal(shareAmt) });
+        seen.add(s.userId);
+      }
+      if (
+        finalShares.length !== participantIds.length ||
+        sumCents !== totalCents
+      ) {
+        res
+          .status(400)
+          .json({
+            error:
+              "Sum of shares must equal total amount and include all participants",
+          });
+        return;
+      }
+    } else {
+      // Equal split in cents across participants
+      const n = participantIds.length;
+      const base = Math.floor(totalCents / n);
+      let remainder = totalCents % n;
+      finalShares = participantIds
+        .slice()
+        .sort()
+        .map((uid, idx) => {
+          const cents = base + (idx < remainder ? 1 : 0);
+          return { userId: uid, amount: new Decimal(cents).div(100) };
+        });
+    }
+
+    // Create expense then shares atomically
+    const created = await prisma.$transaction(async (tx) => {
+      const exp = await tx.expense.create({
+        data: {
+          amount: new Decimal(amount),
+          description: description.trim(),
+          date: date ? new Date(date) : new Date(),
+          groupId: parseInt(groupId),
+          paidById: req.user!.id,
+          categoryId: categoryId ? parseInt(categoryId) : null,
+        },
+        include: {
+          category: {
+            select: { id: true, name: true, icon: true, color: true },
+          },
+        },
+      });
+
+      await (tx as any).expenseShare.createMany({
+        data: finalShares.map((s) => ({
+          expenseId: exp.id,
+          userId: s.userId,
+          amount: s.amount,
+        })),
+        skipDuplicates: true,
+      });
+
+      return exp;
+    });
+
+    res.status(201).json(created);
   } catch (err) {
     console.error("Failed to create expense:", err);
     res.status(500).json({ error: "Failed to create expense" });
@@ -117,28 +219,63 @@ export const getExpensesByGroup = async (
       orderBy: { date: "desc" },
     });
 
-    // Add member information for who paid
-    const expensesWithPaidBy = await Promise.all(
+    const expenseIds = expenses.map((e) => e.id);
+    const allShares = expenseIds.length
+      ? await (prisma as any).expenseShare.findMany({
+          where: { expenseId: { in: expenseIds } },
+          select: { expenseId: true, userId: true, amount: true },
+        })
+      : [];
+
+    // Members for fallback equal split
+    const groupMembers = await prisma.groupMember.findMany({
+      where: { groupId: parseInt(groupId) },
+      select: { userId: true },
+      orderBy: { userId: "asc" },
+    });
+
+    const byExpenseId: Record<
+      number,
+      Array<{ userId: string; amount: string }>
+    > = {};
+    for (const s of allShares as Array<{
+      expenseId: number;
+      userId: string;
+      amount: any;
+    }>) {
+      if (!byExpenseId[s.expenseId]) byExpenseId[s.expenseId] = [];
+      byExpenseId[s.expenseId].push({
+        userId: s.userId,
+        amount: String(s.amount),
+      });
+    }
+
+    const withPaidByAndShares = await Promise.all(
       expenses.map(async (expense) => {
         const paidByMember = await prisma.groupMember.findFirst({
-          where: {
-            groupId: parseInt(groupId),
-            userId: expense.paidById,
-          },
-          select: {
-            email: true,
-            name: true,
-          },
+          where: { groupId: parseInt(groupId), userId: expense.paidById },
+          select: { email: true, name: true },
         });
 
-        return {
-          ...expense,
-          paidBy: paidByMember,
-        };
+        let sharesForExpense = byExpenseId[expense.id];
+        if (!sharesForExpense || sharesForExpense.length === 0) {
+          // Derive equal split for legacy expenses for display
+          const totalCents = Math.round(Number(expense.amount) * 100);
+          const ids = groupMembers.map((m) => m.userId);
+          const n = Math.max(1, ids.length);
+          const base = Math.floor(totalCents / n);
+          let rem = totalCents % n;
+          sharesForExpense = ids.map((uid: string, idx: number) => ({
+            userId: uid,
+            amount: ((base + (idx < rem ? 1 : 0)) / 100).toFixed(2),
+          }));
+        }
+
+        return { ...expense, paidBy: paidByMember, shares: sharesForExpense };
       })
     );
 
-    res.status(200).json(expensesWithPaidBy);
+    res.status(200).json(withPaidByAndShares);
   } catch (err) {
     console.error("Failed to fetch expenses:", err);
     res.status(500).json({ error: "Failed to fetch expenses" });
@@ -150,7 +287,8 @@ export const updateExpense = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const { amount, description, date, categoryId } = req.body;
+  const { amount, description, date, categoryId, participants, shares } =
+    req.body;
 
   // Ensure user is authenticated
   if (!req.user) {
@@ -176,29 +314,133 @@ export const updateExpense = async (
       return;
     }
 
-    // Update the expense
-    const updatedExpense = await prisma.expense.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        ...(amount && { amount: new Decimal(amount) }),
-        ...(description && { description: description.trim() }),
-        ...(date && { date: new Date(date) }),
-        ...(categoryId !== undefined && {
-          categoryId: categoryId ? parseInt(categoryId) : null,
-        }),
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
-            color: true,
+    // Update expense and optionally replace shares in a transaction
+    const updatedExpense = await prisma.$transaction(async (tx) => {
+      const exp = await tx.expense.update({
+        where: { id: parseInt(id) },
+        data: {
+          ...(amount && { amount: new Decimal(amount) }),
+          ...(description && { description: description.trim() }),
+          ...(date && { date: new Date(date) }),
+          ...(categoryId !== undefined && {
+            categoryId: categoryId ? parseInt(categoryId) : null,
+          }),
+        },
+        include: {
+          category: {
+            select: { id: true, name: true, icon: true, color: true },
           },
         },
-      },
+      });
+
+      const groupId = exp.groupId;
+      const allMembers = await tx.groupMember.findMany({
+        where: { groupId },
+        select: { userId: true },
+        orderBy: { userId: "asc" },
+      });
+      const groupMemberIds = new Set(allMembers.map((m) => m.userId));
+
+      // Decide participants for update
+      let participantIds: string[] | undefined = undefined;
+      if (Array.isArray(participants) && participants.length > 0) {
+        participantIds = Array.from(new Set(participants as string[]));
+        for (const uid of participantIds) {
+          if (!groupMemberIds.has(uid)) {
+            throw new Error("Participants must be group members");
+          }
+        }
+      }
+
+      // Build shares if provided, else if amount changed and existing shares exist, re-equalize across current share participants
+      let newShares: { userId: string; amount: Decimal }[] | undefined =
+        undefined;
+      if (Array.isArray(shares) && shares.length > 0) {
+        const provided = shares as Array<{
+          userId: string;
+          amount: number | string;
+        }>;
+        const seen = new Set<string>();
+        let sum = 0;
+        const ids = participantIds ?? provided.map((s) => s.userId);
+        for (const s of provided) {
+          if (
+            !ids.includes(s.userId) ||
+            seen.has(s.userId) ||
+            !groupMemberIds.has(s.userId)
+          ) {
+            throw new Error("Invalid shares list");
+          }
+          const amt =
+            typeof s.amount === "string"
+              ? parseFloat(s.amount)
+              : Number(s.amount || 0);
+          if (amt < 0) throw new Error("Share amount cannot be negative");
+          sum += Math.round(amt * 100);
+        }
+        const totalCents = Math.round(
+          Number((amount ?? exp.amount) as any) * 100
+        );
+        if (sum !== totalCents)
+          throw new Error("Sum of shares must equal total amount");
+        newShares = provided.map((s) => ({
+          userId: s.userId,
+          amount: new Decimal(
+            typeof s.amount === "string" ? s.amount : Number(s.amount || 0)
+          ),
+        }));
+      } else if (amount !== undefined) {
+        // Re-equalize using either provided participants or existing share participants
+        const existing = await (tx as any).expenseShare.findMany({
+          where: { expenseId: exp.id },
+          select: { userId: true },
+        });
+        const ids =
+          participantIds ??
+          (existing.length
+            ? existing.map((s: any) => s.userId)
+            : allMembers.map((m) => m.userId));
+        const totalCents = Math.round(Number(amount) * 100);
+        const n = Math.max(1, ids.length);
+        const base = Math.floor(totalCents / n);
+        let rem = totalCents % n;
+        newShares = ids
+          .slice()
+          .sort()
+          .map((uid: string, idx: number) => ({
+            userId: uid,
+            amount: new Decimal((base + (idx < rem ? 1 : 0)) / 100),
+          }));
+      } else if (participantIds) {
+        // Participants changed without amount: re-equalize with current total
+        const totalCents = Math.round(Number(exp.amount as any) * 100);
+        const ids = participantIds;
+        const n = Math.max(1, ids.length);
+        const base = Math.floor(totalCents / n);
+        let rem = totalCents % n;
+        newShares = ids
+          .slice()
+          .sort()
+          .map((uid: string, idx: number) => ({
+            userId: uid,
+            amount: new Decimal((base + (idx < rem ? 1 : 0)) / 100),
+          }));
+      }
+
+      if (newShares) {
+        await (tx as any).expenseShare.deleteMany({
+          where: { expenseId: exp.id },
+        });
+        await (tx as any).expenseShare.createMany({
+          data: newShares.map((s) => ({
+            expenseId: exp.id,
+            userId: s.userId,
+            amount: s.amount,
+          })),
+        });
+      }
+
+      return exp;
     });
 
     res.status(200).json(updatedExpense);

@@ -4,9 +4,9 @@
   "private": true,
   "dependencies": {
     "@mantine/core": "^7.15.2",
-    "@mantine/form": "^8.1.3",
-    "@mantine/hooks": "^8.1.3",
-    "@mantine/notifications": "^8.1.3",
+    "@mantine/form": "^7.15.2",
+    "@mantine/hooks": "^7.15.2",
+    "@mantine/notifications": "^7.15.2",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.52.0",

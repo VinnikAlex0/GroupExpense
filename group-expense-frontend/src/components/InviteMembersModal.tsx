@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Modal,
   Button,
   TextInput,
   Select,
@@ -13,6 +12,7 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { IconMail, IconUserPlus, IconInfoCircle } from "@tabler/icons-react";
 import { Role } from "../services/groupService";
+import { ResponsiveSheet } from "./responsive/ResponsiveSheet";
 
 interface InviteMembersModalProps {
   opened: boolean;
@@ -86,15 +86,39 @@ export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
     { value: Role.ADMIN, label: "Admin" },
   ];
 
+  const footer = (
+    <Stack gap="xs">
+      <Button
+        type="submit"
+        form="invite-member-form"
+        className="w-full"
+        radius="md"
+        variant="filled"
+        loading={submitting || loading}
+        leftSection={<IconUserPlus size={16} />}
+      >
+        Invite Member
+      </Button>
+      <Button
+        className="w-full"
+        radius="md"
+        variant="subtle"
+        onClick={handleClose}
+        disabled={submitting || loading}
+      >
+        Cancel
+      </Button>
+    </Stack>
+  );
+
   return (
-    <Modal
+    <ResponsiveSheet
       opened={opened}
       onClose={handleClose}
       title={`Invite Member to ${groupName}`}
-      size="md"
-      centered
+      footer={footer}
     >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form id="invite-member-form" onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <Alert
             icon={<IconInfoCircle size={16} />}
@@ -129,25 +153,9 @@ export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
             <strong>Admin:</strong> Can also invite and manage other members
           </Text>
 
-          <Group justify="flex-end" mt="md">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={submitting || loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={submitting || loading}
-              className="bg-blue-600 hover:bg-blue-700"
-              leftSection={<IconUserPlus size={16} />}
-            >
-              Invite Member
-            </Button>
-          </Group>
+          <div />
         </Stack>
       </form>
-    </Modal>
+    </ResponsiveSheet>
   );
 };

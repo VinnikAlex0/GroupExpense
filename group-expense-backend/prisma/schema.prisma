@@ -71,10 +71,25 @@ model Expense {
   // Relationships
   group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   category    Category? @relation(fields: [categoryId], references: [id])
+  shares      ExpenseShare[]
 
   @@index([groupId])
   @@index([paidById])
   @@index([date])
+}
+
+// Per-member shares for an expense
+model ExpenseShare {
+  id        Int     @id @default(autoincrement())
+  expenseId Int
+  userId    String  // Supabase user ID
+  amount    Decimal @db.Decimal(10, 2)
+
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@unique([expenseId, userId])
+  @@index([expenseId])
+  @@index([userId])
 }
 
 // Notifications for users (group invitations, etc.)

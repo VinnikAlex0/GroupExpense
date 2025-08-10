@@ -11,11 +11,9 @@ import {
   Stack,
   Badge,
   Divider,
-  ActionIcon,
   Avatar,
 } from "@mantine/core";
 import {
-  IconArrowLeft,
   IconPlus,
   IconCurrencyDollar,
   IconUserPlus,
@@ -56,7 +54,6 @@ const GroupDetailsPage: React.FC = () => {
     creating,
     error: expensesError,
     createExpense,
-    deleteExpense,
   } = useExpenses(groupId);
 
   const { refreshGroups } = useGroups();
@@ -163,7 +160,7 @@ const GroupDetailsPage: React.FC = () => {
   }
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" className="pb-24 sm:pb-0">
       {/* Group Header Info */}
       <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
         <Stack gap="md">
@@ -190,15 +187,17 @@ const GroupDetailsPage: React.FC = () => {
           {/* Members Section */}
           <div>
             <Group justify="space-between" align="center" mb="sm">
-              <Text fw={500}>
+              <Text fw={600} size="sm">
                 Members ({String(group.members?.length || 0)})
               </Text>
               {(group.userRole === Role.OWNER ||
                 group.userRole === Role.ADMIN) && (
                 <Button
-                  size="xs"
-                  variant="light"
-                  leftSection={<IconUserPlus size={14} />}
+                  className="hidden sm:inline-flex"
+                  size="md"
+                  radius="md"
+                  variant="filled"
+                  leftSection={<IconUserPlus size={18} />}
                   onClick={() => setInviteMembersModalOpen(true)}
                   loading={inviting}
                 >
@@ -206,11 +205,11 @@ const GroupDetailsPage: React.FC = () => {
                 </Button>
               )}
             </Group>
-            <Group gap="xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {group.members.map((member) => (
-                <Group key={member.id} gap="xs">
+                <Group key={member.id} gap="sm" wrap="nowrap">
                   <Avatar
-                    size="sm"
+                    size="md"
                     radius="xl"
                     name={member.name || member.email}
                     color="blue"
@@ -219,8 +218,8 @@ const GroupDetailsPage: React.FC = () => {
                       .substring(0, 2)
                       .toUpperCase()}
                   </Avatar>
-                  <div>
-                    <Text size="sm" fw={500}>
+                  <div className="min-w-0">
+                    <Text size="sm" fw={600} className="truncate">
                       {String(member.name || member.email.split("@")[0])}
                     </Text>
                     <Badge size="xs" variant="outline">
@@ -229,10 +228,37 @@ const GroupDetailsPage: React.FC = () => {
                   </div>
                 </Group>
               ))}
-            </Group>
+            </div>
+            {(group.userRole === Role.OWNER ||
+              group.userRole === Role.ADMIN) && (
+              <Button
+                className="sm:hidden w-full mt-6"
+                size="md"
+                radius="md"
+                variant="filled"
+                leftSection={<IconUserPlus size={18} />}
+                onClick={() => setInviteMembersModalOpen(true)}
+                loading={inviting}
+              >
+                Invite Member
+              </Button>
+            )}
           </div>
         </Stack>
       </Card>
+
+      <div className="fixed bottom-4 left-0 right-0 px-4 sm:hidden z-50">
+        <Button
+          className="w-full drop-shadow-lg"
+          size="md"
+          radius="md"
+          variant="filled"
+          onClick={() => setAddExpenseModalOpen(true)}
+          leftSection={<IconPlus size={18} />}
+        >
+          Add Expense
+        </Button>
+      </div>
 
       {/* Summary Stats */}
       {summary && (
@@ -252,30 +278,6 @@ const GroupDetailsPage: React.FC = () => {
                   ? "expense"
                   : "expenses"}
               </Text>
-            </Card>
-          </Grid.Col>
-
-          <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Text fw={500} mb="xs">
-                Top Category
-              </Text>
-              {summary.byCategory.length > 0 ? (
-                <>
-                  <Text size="lg" fw={600}>
-                    {String(
-                      summary.byCategory[0].category?.name || "Unknown Category"
-                    )}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    {formatCurrency(summary.byCategory[0].totalAmount)}
-                  </Text>
-                </>
-              ) : (
-                <Text c="dimmed" size="sm">
-                  No expenses yet
-                </Text>
-              )}
             </Card>
           </Grid.Col>
 
@@ -302,12 +304,15 @@ const GroupDetailsPage: React.FC = () => {
 
       {/* Expenses Section */}
       <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Group justify="space-between" mb="lg">
+        <Group justify="space-between" mb="lg" align="center">
           <Title order={3}>Recent Expenses</Title>
           <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="hidden sm:inline-flex"
+            size="md"
+            radius="md"
+            variant="filled"
             onClick={() => setAddExpenseModalOpen(true)}
-            leftSection={<IconPlus size={16} />}
+            leftSection={<IconPlus size={18} />}
           >
             Add Expense
           </Button>
@@ -324,9 +329,9 @@ const GroupDetailsPage: React.FC = () => {
           />
         )}
 
-        {/* Expenses List */}
+        {/* Expenses List (no nested cards) */}
         {!expensesLoading && !expensesError && (
-          <Stack gap="sm">
+          <div>
             {expenses.length === 0 ? (
               <div className="text-center py-12">
                 <Text c="dimmed" size="lg" mb="sm">
@@ -337,62 +342,62 @@ const GroupDetailsPage: React.FC = () => {
                   spending.
                 </Text>
                 <Button
+                  className="sm:w-auto w-full"
+                  size="md"
+                  radius="md"
+                  variant="filled"
                   onClick={() => setAddExpenseModalOpen(true)}
-                  leftSection={<IconPlus size={16} />}
+                  leftSection={<IconPlus size={18} />}
                 >
                   Add First Expense
                 </Button>
               </div>
             ) : (
-              expenses.map((expense) => (
-                <Card
-                  key={expense.id}
-                  padding="md"
-                  radius="sm"
-                  withBorder
-                  className="hover:shadow-sm transition-shadow"
-                >
-                  <Group justify="space-between" align="flex-start">
-                    <div className="flex-1">
-                      <Group gap="sm" mb="xs">
-                        <Text fw={500}>
-                          {String(expense.description || "No description")}
-                        </Text>
-                        {expense.category && (
-                          <Badge
-                            size="sm"
-                            variant="light"
-                            color={expense.category.color || "blue"}
-                          >
-                            {String(expense.category.name || "Category")}
-                          </Badge>
-                        )}
-                      </Group>
-                      <Group gap="sm">
-                        <Text size="sm" c="dimmed">
-                          Paid by{" "}
-                          {String(
-                            expense.paidBy?.name ||
-                              expense.paidBy?.email ||
-                              "Unknown"
+              <div className="divide-y divide-gray-200">
+                {expenses.map((expense) => (
+                  <div key={expense.id} className="py-3">
+                    <Group justify="space-between" align="flex-start">
+                      <div className="flex-1 min-w-0">
+                        <Group gap="xs" mb="xs" wrap="nowrap">
+                          <Text fw={600} className="truncate">
+                            {String(expense.description || "No description")}
+                          </Text>
+                          {expense.category && (
+                            <Badge
+                              size="sm"
+                              variant="light"
+                              color={expense.category.color || "blue"}
+                            >
+                              {String(expense.category.name || "Category")}
+                            </Badge>
                           )}
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          •
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          {formatDate(expense.date)}
-                        </Text>
-                      </Group>
-                    </div>
-                    <Text fw={600} c="green" size="lg">
-                      {formatCurrency(expense.amount)}
-                    </Text>
-                  </Group>
-                </Card>
-              ))
+                        </Group>
+                        <Group gap="xs">
+                          <Text size="sm" c="dimmed">
+                            Paid by{" "}
+                            {String(
+                              expense.paidBy?.name ||
+                                expense.paidBy?.email ||
+                                "Unknown"
+                            )}
+                          </Text>
+                          <Text size="sm" c="dimmed">
+                            •
+                          </Text>
+                          <Text size="sm" c="dimmed">
+                            {formatDate(expense.date)}
+                          </Text>
+                        </Group>
+                      </div>
+                      <Text fw={700} c="green" size="lg">
+                        {formatCurrency(expense.amount)}
+                      </Text>
+                    </Group>
+                  </div>
+                ))}
+              </div>
             )}
-          </Stack>
+          </div>
         )}
       </Card>
 
@@ -404,6 +409,7 @@ const GroupDetailsPage: React.FC = () => {
         categories={categories}
         loading={creating}
         groupId={groupId}
+        members={group.members}
       />
 
       {/* Invite Members Modal */}
