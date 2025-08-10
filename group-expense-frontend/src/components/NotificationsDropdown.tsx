@@ -118,8 +118,6 @@ export const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
           </Group>
         </Menu.Label>
 
-        <Divider />
-
         <ScrollArea.Autosize mah={300}>
           <Stack gap="xs" p="xs">
             {notifications.length === 0 ? (

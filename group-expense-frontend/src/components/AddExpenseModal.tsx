@@ -1,23 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Button,
-  TextInput,
-  NumberInput,
-  Textarea,
-  Select,
-  Stack,
-  Group,
-  Text,
-  Divider,
-} from "@mantine/core";
+import { Button, Stack, Group, Text } from "@mantine/core";
 
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
-import { IconCalendar, IconCurrencyDollar } from "@tabler/icons-react";
+import { IconCurrencyDollar } from "@tabler/icons-react";
 import { CreateExpenseData, Category } from "../services/expenseService";
 import { GroupMember } from "../services/groupService";
 import { equalize, reallocateWithLocks } from "./add-expense/splitUtils";
-import { SplitEditor } from "./add-expense/SplitEditor";
+import { AddExpenseForm } from "./forms/AddExpenseForm";
+import {
+  addExpenseFormValidate,
+  validateSharesAgainstTotal,
+} from "./validation/addExpense.validation";
 import { ResponsiveSheet } from "./responsive/ResponsiveSheet";
 
 interface AddExpenseModalProps {
@@ -63,19 +57,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       date: new Date().toISOString().split("T")[0], // Today's date in YYYY-MM-DD format
       categoryId: null,
     },
-    validate: {
-      amount: (value) => {
-        if (!value || value === "") return "Amount is required";
-        const numValue = typeof value === "string" ? parseFloat(value) : value;
-        if (isNaN(numValue) || numValue <= 0)
-          return "Amount must be greater than 0";
-        return null;
-      },
-      description: (value) =>
-        value.trim().length === 0 ? "Description is required" : null,
-      date: (value) =>
-        !value || value.trim() === "" ? "Date is required" : null,
-    },
+    validate: addExpenseFormValidate,
   });
 
   const handleSubmit = async (values: FormValues) => {
@@ -86,21 +68,14 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           ? parseFloat(values.amount)
           : values.amount;
 
-      // Validate split before submit
-      if (includedIds.length === 0) {
-        setShareError("At least one participant must be included");
-        setSubmitting(false);
-        return;
-      }
-      const sumCents = Math.round(
-        includedIds.reduce(
-          (acc, id) => acc + (parseFloat(sharesByUserId[id] || "0") || 0),
-          0
-        ) * 100
+      // Validate split before submit using cross-field validation
+      const cross = validateSharesAgainstTotal(
+        typeof amount === "string" ? parseFloat(amount) : amount,
+        includedIds,
+        sharesByUserId
       );
-      const totalCents = Math.round(Number(amount) * 100);
-      if (sumCents !== totalCents) {
-        setShareError("Sum of shares must equal total amount");
+      if (!cross.ok) {
+        setShareError(cross.error || "Invalid split");
         setSubmitting(false);
         return;
       }
@@ -230,6 +205,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             className="w-full"
             radius="md"
             variant="filled"
+            size="md"
           >
             Add Expense
           </Button>
@@ -237,6 +213,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             variant="subtle"
             className="w-full"
             radius="md"
+            size="md"
             onClick={() => setStep(1)}
           >
             Back
@@ -248,6 +225,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             className="w-full"
             radius="md"
             variant="filled"
+            size="md"
             onClick={onNextFromAmount}
           >
             Next
@@ -256,6 +234,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             className="w-full"
             radius="md"
             variant="subtle"
+            size="md"
             onClick={handleClose}
           >
             Cancel
@@ -278,113 +257,40 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       footer={footer}
     >
       <form id="add-expense-form" onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack gap="md">
-          {step === 1 && (
-            <>
-              <NumberInput
-                label="Amount"
-                placeholder="0.00"
-                leftSection={<IconCurrencyDollar size={16} />}
-                decimalScale={2}
-                fixedDecimalScale
-                allowNegative={false}
-                required
-                {...form.getInputProps("amount")}
-              />
-              <div />
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              {/* Details */}
-              <Textarea
-                label="Description"
-                placeholder="What was this expense for?"
-                required
-                minRows={2}
-                maxRows={4}
-                autosize
-                {...form.getInputProps("description")}
-              />
-              <TextInput
-                label="Date"
-                placeholder="When did this expense occur?"
-                leftSection={<IconCalendar size={16} />}
-                type="date"
-                required
-                max={new Date().toISOString().split("T")[0]}
-                {...form.getInputProps("date")}
-              />
-              <Select
-                label="Category"
-                placeholder="Select a category (optional)"
-                data={categoryOptions}
-                searchable
-                clearable
-                {...form.getInputProps("categoryId")}
-              />
-
-              <SplitEditor
-                members={members}
-                includedIds={includedIds}
-                setIncludedIds={setIncludedIds}
-                sharesByUserId={sharesByUserId}
-                setSharesByUserId={(updater) =>
-                  setSharesByUserId((prev) => updater(prev))
-                }
-                lockedIds={lockedIds}
-                setLockedIds={setLockedIds}
-                splitMode={splitMode}
-                setSplitMode={setSplitMode}
-                totalAmount={
-                  typeof form.values.amount === "string"
-                    ? parseFloat(form.values.amount)
-                    : form.values.amount || 0
-                }
-                setShareError={setShareError}
-              />
-
-              <Divider my="xs" />
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed">
-                  Remaining
-                </Text>
-                <Text
-                  fw={600}
-                  c={remainingDisplay === "0.00" ? undefined : "red"}
-                >
-                  ${remainingDisplay}
-                </Text>
-              </Group>
-              {shareError && (
-                <Text c="red" size="sm" mt="xs">
-                  {shareError}
-                </Text>
-              )}
-
-              <Group justify="flex-end" mt="md">
-                <Button
-                  variant="light"
-                  onClick={() => {
-                    const amountValue =
-                      typeof form.values.amount === "string"
-                        ? parseFloat(form.values.amount)
-                        : form.values.amount;
-                    setSharesByUserId(
-                      equalize(Number(amountValue || 0), includedIds)
-                    );
-                    setLockedIds(new Set());
-                    setSplitMode("equal");
-                    setShareError(null);
-                  }}
-                >
-                  Equalize
-                </Button>
-              </Group>
-            </>
-          )}
-        </Stack>
+        <AddExpenseForm
+          form={form as any}
+          categories={categories}
+          remainingDisplay={remainingDisplay}
+          shareError={shareError}
+          onEqualize={() => {
+            const amountValue =
+              typeof form.values.amount === "string"
+                ? parseFloat(form.values.amount)
+                : form.values.amount;
+            setSharesByUserId(equalize(Number(amountValue || 0), includedIds));
+            setLockedIds(new Set());
+            setSplitMode("equal");
+            setShareError(null);
+          }}
+          splitEditorProps={{
+            members,
+            includedIds,
+            setIncludedIds,
+            sharesByUserId,
+            setSharesByUserId: (updater: any) =>
+              setSharesByUserId((prev) => updater(prev)),
+            lockedIds,
+            setLockedIds,
+            splitMode,
+            setSplitMode,
+            totalAmount:
+              typeof form.values.amount === "string"
+                ? parseFloat(form.values.amount)
+                : form.values.amount || 0,
+            setShareError,
+          }}
+          step={step}
+        />
       </form>
     </ResponsiveSheet>
   );

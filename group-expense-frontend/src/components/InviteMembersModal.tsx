@@ -1,18 +1,12 @@
 import React, { useState } from "react";
-import {
-  Button,
-  TextInput,
-  Select,
-  Stack,
-  Group,
-  Text,
-  Alert,
-} from "@mantine/core";
+import { Button, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
-import { IconMail, IconUserPlus, IconInfoCircle } from "@tabler/icons-react";
+import { IconUserPlus } from "@tabler/icons-react";
 import { Role } from "../services/groupService";
 import { ResponsiveSheet } from "./responsive/ResponsiveSheet";
+import { InviteMemberForm } from "./forms/InviteMemberForm";
+import { inviteMemberFormValidate } from "./validation/inviteMember.validation";
 
 interface InviteMembersModalProps {
   opened: boolean;
@@ -41,16 +35,7 @@ export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
       email: "",
       role: Role.MEMBER,
     },
-    validate: {
-      email: (value) => {
-        if (!value || !value.trim()) return "Email is required";
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value.trim())) {
-          return "Please enter a valid email address";
-        }
-        return null;
-      },
-    },
+    validate: inviteMemberFormValidate,
   });
 
   const handleSubmit = async (values: FormValues) => {
@@ -81,11 +66,6 @@ export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
     onClose();
   };
 
-  const roleOptions = [
-    { value: Role.MEMBER, label: "Member" },
-    { value: Role.ADMIN, label: "Admin" },
-  ];
-
   const footer = (
     <Stack gap="xs">
       <Button
@@ -94,6 +74,7 @@ export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
         className="w-full"
         radius="md"
         variant="filled"
+        size="md"
         loading={submitting || loading}
         leftSection={<IconUserPlus size={16} />}
       >
@@ -103,6 +84,7 @@ export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
         className="w-full"
         radius="md"
         variant="subtle"
+        size="md"
         onClick={handleClose}
         disabled={submitting || loading}
       >
@@ -119,42 +101,7 @@ export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
       footer={footer}
     >
       <form id="invite-member-form" onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack gap="md">
-          <Alert
-            icon={<IconInfoCircle size={16} />}
-            color="blue"
-            variant="light"
-          >
-            <Text size="sm">
-              When you invite someone, they'll be automatically added to the
-              group. If they have an account, they'll receive a notification.
-            </Text>
-          </Alert>
-
-          <TextInput
-            label="Email Address"
-            placeholder="Enter member's email"
-            required
-            leftSection={<IconMail size={16} />}
-            {...form.getInputProps("email")}
-            disabled={submitting}
-          />
-
-          <Select
-            label="Role"
-            data={roleOptions}
-            {...form.getInputProps("role")}
-            disabled={submitting}
-          />
-
-          <Text size="sm" c="dimmed">
-            <strong>Member:</strong> Can view the group and add expenses
-            <br />
-            <strong>Admin:</strong> Can also invite and manage other members
-          </Text>
-
-          <div />
-        </Stack>
+        <InviteMemberForm form={form} disabled={submitting} />
       </form>
     </ResponsiveSheet>
   );

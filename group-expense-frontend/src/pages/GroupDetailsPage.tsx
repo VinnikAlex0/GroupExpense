@@ -10,9 +10,9 @@ import {
   Group,
   Stack,
   Badge,
-  Divider,
   Avatar,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import {
   IconPlus,
   IconCurrencyDollar,
@@ -32,6 +32,7 @@ import {
   AddExpenseModal,
   InviteMembersModal,
 } from "../components";
+import { ResponsiveSheet } from "../components/responsive/ResponsiveSheet";
 import { notifications } from "@mantine/notifications";
 
 const GroupDetailsPage: React.FC = () => {
@@ -45,6 +46,8 @@ const GroupDetailsPage: React.FC = () => {
   const [addExpenseModalOpen, setAddExpenseModalOpen] = useState(false);
   const [inviteMembersModalOpen, setInviteMembersModalOpen] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [allMembersOpen, setAllMembersOpen] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 640px)");
 
   const {
     expenses,
@@ -182,8 +185,6 @@ const GroupDetailsPage: React.FC = () => {
             )}
           </Group>
 
-          <Divider />
-
           {/* Members Section */}
           <div>
             <Group justify="space-between" align="center" mb="sm">
@@ -193,7 +194,7 @@ const GroupDetailsPage: React.FC = () => {
               {(group.userRole === Role.OWNER ||
                 group.userRole === Role.ADMIN) && (
                 <Button
-                  className="hidden sm:inline-flex"
+                  className="hidden sm:inline-flex mb-3"
                   size="md"
                   radius="md"
                   variant="filled"
@@ -205,8 +206,8 @@ const GroupDetailsPage: React.FC = () => {
                 </Button>
               )}
             </Group>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {group.members.map((member) => (
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-3">
+              {group.members.slice(0, isDesktop ? 6 : 4).map((member) => (
                 <Group key={member.id} gap="sm" wrap="nowrap">
                   <Avatar
                     size="md"
@@ -229,6 +230,17 @@ const GroupDetailsPage: React.FC = () => {
                 </Group>
               ))}
             </div>
+            {group.members.length > (isDesktop ? 6 : 4) && (
+              <Button
+                variant="light"
+                size="xs"
+                radius="md"
+                className="self-start mt-3"
+                onClick={() => setAllMembersOpen(true)}
+              >
+                + {group.members.length - (isDesktop ? 6 : 4)} more
+              </Button>
+            )}
             {(group.userRole === Role.OWNER ||
               group.userRole === Role.ADMIN) && (
               <Button
@@ -250,8 +262,8 @@ const GroupDetailsPage: React.FC = () => {
       <div className="fixed bottom-4 left-0 right-0 px-4 sm:hidden z-50">
         <Button
           className="w-full drop-shadow-lg"
-          size="md"
-          radius="md"
+          size="lg"
+          radius="lg"
           variant="filled"
           onClick={() => setAddExpenseModalOpen(true)}
           leftSection={<IconPlus size={18} />}
@@ -341,16 +353,6 @@ const GroupDetailsPage: React.FC = () => {
                   Add your first expense to get started tracking your group's
                   spending.
                 </Text>
-                <Button
-                  className="sm:w-auto w-full"
-                  size="md"
-                  radius="md"
-                  variant="filled"
-                  onClick={() => setAddExpenseModalOpen(true)}
-                  leftSection={<IconPlus size={18} />}
-                >
-                  Add First Expense
-                </Button>
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
@@ -422,6 +424,38 @@ const GroupDetailsPage: React.FC = () => {
           groupName={group.name}
         />
       )}
+
+      {/* All Members Sheet/Modal */}
+      <ResponsiveSheet
+        opened={allMembersOpen}
+        onClose={() => setAllMembersOpen(false)}
+        title={`All Members (${group.members.length})`}
+      >
+        <Stack gap="sm">
+          {group.members.map((member) => (
+            <Group key={member.id} gap="sm" wrap="nowrap">
+              <Avatar
+                size="md"
+                radius="xl"
+                name={member.name || member.email}
+                color="blue"
+              >
+                {String(member.name || member.email)
+                  .substring(0, 2)
+                  .toUpperCase()}
+              </Avatar>
+              <div className="min-w-0">
+                <Text size="sm" fw={600} className="truncate">
+                  {String(member.name || member.email.split("@")[0])}
+                </Text>
+                <Badge size="xs" variant="outline">
+                  {String(member.role)}
+                </Badge>
+              </div>
+            </Group>
+          ))}
+        </Stack>
+      </ResponsiveSheet>
     </Container>
   );
 };
