@@ -21,16 +21,13 @@ const GroupsPage: React.FC = () => {
   };
 
   return (
-    <Container size="md" py="xl">
+    <Container size="md" py="xl" className="pb-24 sm:pb-0">
       {/* Page Header */}
       <div className="mb-6">
         <Title order={2} className="text-gray-800">
           Your Groups
         </Title>
-        <Button
-          onClick={() => setModalOpened(true)}
-          className="bg-blue-600 hover:bg-blue-700 mt-8"
-        >
+        <Button onClick={() => setModalOpened(true)} className="hidden sm:inline-flex mt-8" radius="md" size="md" variant="filled">
           + Create Group
         </Button>
       </div>
@@ -55,6 +52,13 @@ const GroupsPage: React.FC = () => {
         onSubmit={createGroup}
         loading={creating}
       />
+
+      {/* Mobile fixed primary CTA */}
+      <div className="fixed bottom-4 left-0 right-0 px-4 sm:hidden z-50">
+        <Button className="w-full" radius="md" size="md" variant="filled" onClick={() => setModalOpened(true)}>
+          + Create Group
+        </Button>
+      </div>
     </Container>
   );
 };

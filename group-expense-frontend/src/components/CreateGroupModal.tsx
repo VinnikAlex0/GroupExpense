@@ -1,14 +1,8 @@
 import React from "react";
-import {
-  Modal,
-  Button,
-  TextInput,
-  Textarea,
-  Stack,
-  Group,
-} from "@mantine/core";
+import { Button, TextInput, Textarea, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { CreateGroupData } from "../services/groupService";
+import { ResponsiveSheet } from "./responsive/ResponsiveSheet";
 
 interface CreateGroupModalProps {
   opened: boolean;
@@ -51,15 +45,38 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     onClose();
   };
 
+  const footer = (
+    <Stack gap="xs">
+      <Button
+        type="submit"
+        form="create-group-form"
+        className="w-full"
+        radius="md"
+        variant="filled"
+        loading={loading}
+      >
+        Create Group
+      </Button>
+      <Button
+        className="w-full"
+        radius="md"
+        variant="subtle"
+        onClick={handleClose}
+        disabled={loading}
+      >
+        Cancel
+      </Button>
+    </Stack>
+  );
+
   return (
-    <Modal
+    <ResponsiveSheet
       opened={opened}
       onClose={handleClose}
       title="Create New Group"
-      size="md"
-      centered
+      footer={footer}
     >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form id="create-group-form" onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <TextInput
             label="Group Name"
@@ -76,20 +93,9 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             {...form.getInputProps("description")}
           />
 
-          <Group justify="flex-end" mt="md">
-            <Button variant="outline" onClick={handleClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={loading}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Create Group
-            </Button>
-          </Group>
+          <div />
         </Stack>
       </form>
-    </Modal>
+    </ResponsiveSheet>
   );
 };
