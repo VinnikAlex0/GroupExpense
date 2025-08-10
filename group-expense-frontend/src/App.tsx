@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ScrollToTop } from "./routes/ScrollToTop";
 import { useAuth } from "./contexts/AuthContext";
 import { ProtectedRoute, LoadingSpinner, Layout } from "./components";
 import GroupsPage from "./pages/GroupsPage";
@@ -16,6 +17,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Auth Route - Only show if not authenticated */}
         <Route

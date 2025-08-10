@@ -27,7 +27,13 @@ const GroupsPage: React.FC = () => {
         <Title order={2} className="text-gray-800">
           Your Groups
         </Title>
-        <Button onClick={() => setModalOpened(true)} className="hidden sm:inline-flex mt-8" radius="md" size="md" variant="filled">
+        <Button
+          onClick={() => setModalOpened(true)}
+          className="hidden sm:inline-flex mt-8"
+          radius="md"
+          size="md"
+          variant="filled"
+        >
           + Create Group
         </Button>
       </div>
@@ -55,7 +61,13 @@ const GroupsPage: React.FC = () => {
 
       {/* Mobile fixed primary CTA */}
       <div className="fixed bottom-4 left-0 right-0 px-4 sm:hidden z-50">
-        <Button className="w-full" radius="md" size="md" variant="filled" onClick={() => setModalOpened(true)}>
+        <Button
+          className="w-full"
+          radius="lg"
+          size="lg"
+          variant="filled"
+          onClick={() => setModalOpened(true)}
+        >
           + Create Group
         </Button>
       </div>

@@ -17,7 +17,9 @@ root.render(
     <AuthProvider>
       <MantineProvider>
         <Notifications />
-        <App />
+        <div className="pb-24 sm:pb-0">
+          <App />
+        </div>
       </MantineProvider>
     </AuthProvider>
   </React.StrictMode>

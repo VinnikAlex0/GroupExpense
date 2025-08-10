@@ -1,8 +1,10 @@
 import React from "react";
-import { Button, TextInput, Textarea, Stack } from "@mantine/core";
+import { Button, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { CreateGroupData } from "../services/groupService";
 import { ResponsiveSheet } from "./responsive/ResponsiveSheet";
+import { CreateGroupForm } from "./forms/CreateGroupForm";
+import { createGroupFormValidate } from "./validation/createGroup.validation";
 
 interface CreateGroupModalProps {
   opened: boolean;
@@ -22,10 +24,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       name: "",
       description: "",
     },
-    validate: {
-      name: (value) =>
-        value.length < 2 ? "Group name must have at least 2 letters" : null,
-    },
+    validate: createGroupFormValidate,
   });
 
   const handleSubmit = async (values: CreateGroupData) => {
@@ -53,6 +52,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         className="w-full"
         radius="md"
         variant="filled"
+        size="md"
         loading={loading}
       >
         Create Group
@@ -61,6 +61,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         className="w-full"
         radius="md"
         variant="subtle"
+        size="md"
         onClick={handleClose}
         disabled={loading}
       >
@@ -77,24 +78,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       footer={footer}
     >
       <form id="create-group-form" onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack gap="md">
-          <TextInput
-            label="Group Name"
-            placeholder="Enter group name"
-            required
-            {...form.getInputProps("name")}
-          />
-
-          <Textarea
-            label="Description"
-            placeholder="What's this group for? (optional)"
-            minRows={3}
-            maxRows={5}
-            {...form.getInputProps("description")}
-          />
-
-          <div />
-        </Stack>
+        <CreateGroupForm form={form} />
       </form>
     </ResponsiveSheet>
   );
